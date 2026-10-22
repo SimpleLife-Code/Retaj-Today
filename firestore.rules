@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAllowedUser() {
+      return request.auth != null && (
+        request.auth.token.email.lower() == 'retajmarketing892@gmail.com' ||
+        request.auth.token.email.lower() == 'waadelsayed267@gmail.com' ||
+        request.auth.token.email.lower() == 'mohammedheshamsedik@gmail.com' ||
+        request.auth.token.email.lower() == 'mohammedhesham872@gmail.com' ||
+        request.auth.token.email.lower() == 'mr.mohamed.hesham93@gmail.com'
+      );
+    }
+
+    match /patients/{patientId} {
+      allow read, write: if isAllowedUser();
+    }
+
+    match /examinations/{examinationId} {
+      allow read, write: if isAllowedUser();
+    }
+
+    match /clinics/{clinicId} {
+      allow read, write: if isAllowedUser();
+    }
+
+    match /holidays/{holidayId} {
+      allow read, write: if isAllowedUser();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

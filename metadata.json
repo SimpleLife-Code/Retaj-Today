@@ -1,0 +1,8 @@
+{
+  "name": "مركز رتاج الطبي | Retaj Medical Center",
+  "description": "نظام إدارة المواعيد وملفات المرضى وتنظيم وقت الموظف وكشوفات إعادة الفحص والخصومات والأعياد الرسمية لمركز رتاج الطبي.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

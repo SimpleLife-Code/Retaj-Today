@@ -1,0 +1,113 @@
+{
+  "entities": {
+    "Patient": {
+      "title": "Patient",
+      "description": "Patient file record in Retaj Today medical center",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fileNumber": { "type": "string" },
+        "fullName": { "type": "string", "maxLength": 150 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "nationalId": { "type": "string", "maxLength": 30 },
+        "age": { "type": "number" },
+        "gender": { "type": "string", "enum": ["ذكر", "أنثى"] },
+        "address": { "type": "string", "maxLength": 200 },
+        "medicalHistory": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" },
+        "notes": { "type": "string", "maxLength": 1000 }
+      },
+      "required": ["id", "fullName", "phone"]
+    },
+    "Examination": {
+      "title": "Examination",
+      "description": "Medical examination and visit record with re-examination tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "receiptNumber": { "type": "string" },
+        "patientId": { "type": "string" },
+        "patientName": { "type": "string", "maxLength": 150 },
+        "patientPhone": { "type": "string", "maxLength": 30 },
+        "clinicId": { "type": "string" },
+        "clinicName": { "type": "string", "maxLength": 100 },
+        "doctorName": { "type": "string", "maxLength": 100 },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "examType": { "type": "string" },
+        "baseFee": { "type": "number" },
+        "discountType": { "type": "string", "enum": ["percentage", "fixed", "none"] },
+        "discountValue": { "type": "number" },
+        "discountReason": { "type": "string", "maxLength": 200 },
+        "finalFee": { "type": "number" },
+        "paidAmount": { "type": "number" },
+        "remainingAmount": { "type": "number" },
+        "paymentStatus": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "diagnosis": { "type": "string", "maxLength": 2000 },
+        "prescription": { "type": "string", "maxLength": 2000 },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "followUpDate": { "type": "string" },
+        "followUpStatus": { "type": "string", "enum": ["pending", "completed", "overdue", "cancelled"] },
+        "followUpNotes": { "type": "string", "maxLength": 1000 },
+        "employeeName": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["id", "patientId", "patientName", "clinicName", "date", "followUpDate"]
+    },
+    "Clinic": {
+      "title": "Clinic",
+      "description": "Specialized clinic in Retaj Today",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "doctorName": { "type": "string", "maxLength": 100 },
+        "specialty": { "type": "string", "maxLength": 150 },
+        "defaultFee": { "type": "number" },
+        "followUpDays": { "type": "number" },
+        "isFollowUpFree": { "type": "boolean" },
+        "color": { "type": "string" },
+        "iconName": { "type": "string" },
+        "active": { "type": "boolean" },
+        "roomNumber": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "name", "doctorName"]
+    },
+    "HolidayDiscount": {
+      "title": "HolidayDiscount",
+      "description": "UAE official holidays and promotional discount campaigns",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 100 },
+        "hijriOrGregorianDate": { "type": "string", "maxLength": 100 },
+        "discountPercent": { "type": "number" },
+        "category": { "type": "string" },
+        "description": { "type": "string", "maxLength": 500 },
+        "isActive": { "type": "boolean" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "badgeColor": { "type": "string" }
+      },
+      "required": ["id", "title", "discountPercent"]
+    }
+  },
+  "firestore": {
+    "/patients/{patientId}": {
+      "schema": "Patient",
+      "description": "Patients registered at Retaj Today UAE"
+    },
+    "/examinations/{examinationId}": {
+      "schema": "Examination",
+      "description": "Examinations, visits, and re-check dates"
+    },
+    "/clinics/{clinicId}": {
+      "schema": "Clinic",
+      "description": "Specialized medical clinics"
+    },
+    "/holidays/{holidayId}": {
+      "schema": "HolidayDiscount",
+      "description": "UAE official holidays and discounts"
+    }
+  }
+}
