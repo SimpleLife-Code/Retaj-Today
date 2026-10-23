@@ -4,6 +4,11 @@ service cloud.firestore {
 
     function isAllowedUser() {
       return request.auth != null && (
+        request.auth.token.email == 'retajmarketing892@gmail.com' ||
+        request.auth.token.email == 'waadelsayed267@gmail.com' ||
+        request.auth.token.email == 'mohammedheshamsedik@gmail.com' ||
+        request.auth.token.email == 'mohammedhesham872@gmail.com' ||
+        request.auth.token.email == 'mr.mohamed.hesham93@gmail.com' ||
         request.auth.token.email.lower() == 'retajmarketing892@gmail.com' ||
         request.auth.token.email.lower() == 'waadelsayed267@gmail.com' ||
         request.auth.token.email.lower() == 'mohammedheshamsedik@gmail.com' ||
