@@ -110,9 +110,11 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white font-sans flex items-center gap-1.5">
-                  <span className="text-sky-600 dark:text-sky-400">Retaj</span>
-                  <span className="text-red-600 dark:text-red-500">Today</span>
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white font-sans flex items-center gap-2">
+                  <span dir="ltr" className="inline-flex items-center gap-1.5 font-black text-xl sm:text-2xl">
+                    <span className="text-sky-600 dark:text-sky-400">Retaj</span>
+                    <span className="text-red-600 dark:text-red-500">Today</span>
+                  </span>
                   <span className="text-slate-400 dark:text-slate-500 font-light text-base hidden sm:inline">|</span>
                   <span className="text-base sm:text-lg font-extrabold text-slate-800 dark:text-slate-200 hidden sm:inline">
                     ريتاج اليوم

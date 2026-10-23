@@ -179,16 +179,14 @@ export default function App() {
       // Listen to Patients
       const unsubPatients = onSnapshot(patientsCol, (snapshot) => {
         setIsFirebaseConnected(true);
-        if (!snapshot.empty) {
-          const loadedPatients: Patient[] = [];
-          snapshot.forEach((doc) => {
-            loadedPatients.push(doc.data() as Patient);
-          });
-          setPatients(loadedPatients);
-          try {
-            localStorage.setItem('retaj_today_patients', JSON.stringify(loadedPatients));
-          } catch {}
-        }
+        const loadedPatients: Patient[] = snapshot.docs.map((doc) => ({
+          ...(doc.data() as Patient),
+          id: doc.id
+        }));
+        setPatients(loadedPatients);
+        try {
+          localStorage.setItem('retaj_today_patients', JSON.stringify(loadedPatients));
+        } catch {}
       }, (error) => {
         handleFirestoreError(error, OperationType.GET, 'patients');
       });
@@ -197,38 +195,46 @@ export default function App() {
       // Listen to Examinations
       const unsubExams = onSnapshot(examsCol, (snapshot) => {
         setIsFirebaseConnected(true);
-        if (!snapshot.empty) {
-          const loadedExams: Examination[] = [];
-          snapshot.forEach((doc) => {
-            loadedExams.push(doc.data() as Examination);
-          });
-          setExaminations(loadedExams);
-          try {
-            localStorage.setItem('retaj_today_examinations', JSON.stringify(loadedExams));
-          } catch {}
-        }
+        const loadedExams: Examination[] = snapshot.docs.map((doc) => ({
+          ...(doc.data() as Examination),
+          id: doc.id
+        }));
+        setExaminations(loadedExams);
+        try {
+          localStorage.setItem('retaj_today_examinations', JSON.stringify(loadedExams));
+        } catch {}
       }, (error) => {
         handleFirestoreError(error, OperationType.GET, 'examinations');
       });
       unsubs.push(unsubExams);
 
       // Listen to Clinics
-      const unsubClinics = onSnapshot(clinicsCol, (snapshot) => {
+      const unsubClinics = onSnapshot(clinicsCol, async (snapshot) => {
         setIsFirebaseConnected(true);
         if (!snapshot.empty) {
-          const loadedClinics: Clinic[] = [];
-          snapshot.forEach((doc) => {
-            loadedClinics.push(doc.data() as Clinic);
-          });
+          const loadedClinics: Clinic[] = snapshot.docs.map((doc) => ({
+            ...(doc.data() as Clinic),
+            id: doc.id
+          }));
           setClinics(loadedClinics);
           try {
             localStorage.setItem('retaj_today_clinics', JSON.stringify(loadedClinics));
           } catch {}
+          localStorage.setItem('retaj_clinics_seeded_db_v2', 'true');
         } else {
-          // If Firestore is fresh and empty, seed initial clinics only if no local storage
-          const savedLocally = localStorage.getItem('retaj_today_clinics');
-          if (!savedLocally) {
-            INITIAL_CLINICS.forEach((c) => firestoreService.saveClinic(c).catch(() => {}));
+          // If Firestore is empty: seed default clinics once if never seeded
+          const alreadySeeded = localStorage.getItem('retaj_clinics_seeded_db_v2');
+          if (!alreadySeeded) {
+            for (const c of INITIAL_CLINICS) {
+              await firestoreService.saveClinic(c).catch(console.error);
+            }
+            localStorage.setItem('retaj_clinics_seeded_db_v2', 'true');
+          } else {
+            // Already seeded previously and now empty -> user deleted all clinics
+            setClinics([]);
+            try {
+              localStorage.setItem('retaj_today_clinics', JSON.stringify([]));
+            } catch {}
           }
         }
       }, (error) => {
@@ -237,21 +243,30 @@ export default function App() {
       unsubs.push(unsubClinics);
 
       // Listen to Holidays
-      const unsubHolidays = onSnapshot(holidaysCol, (snapshot) => {
+      const unsubHolidays = onSnapshot(holidaysCol, async (snapshot) => {
         setIsFirebaseConnected(true);
         if (!snapshot.empty) {
-          const loadedHolidays: HolidayDiscount[] = [];
-          snapshot.forEach((doc) => {
-            loadedHolidays.push(doc.data() as HolidayDiscount);
-          });
+          const loadedHolidays: HolidayDiscount[] = snapshot.docs.map((doc) => ({
+            ...(doc.data() as HolidayDiscount),
+            id: doc.id
+          }));
           setHolidays(loadedHolidays);
           try {
             localStorage.setItem('retaj_today_holidays', JSON.stringify(loadedHolidays));
           } catch {}
+          localStorage.setItem('retaj_holidays_seeded_db_v2', 'true');
         } else {
-          const savedLocally = localStorage.getItem('retaj_today_holidays');
-          if (!savedLocally) {
-            INITIAL_HOLIDAYS_DISCOUNTS.forEach((h) => firestoreService.saveHoliday(h).catch(() => {}));
+          const alreadySeeded = localStorage.getItem('retaj_holidays_seeded_db_v2');
+          if (!alreadySeeded) {
+            for (const h of INITIAL_HOLIDAYS_DISCOUNTS) {
+              await firestoreService.saveHoliday(h).catch(console.error);
+            }
+            localStorage.setItem('retaj_holidays_seeded_db_v2', 'true');
+          } else {
+            setHolidays([]);
+            try {
+              localStorage.setItem('retaj_today_holidays', JSON.stringify([]));
+            } catch {}
           }
         }
       }, (error) => {
@@ -461,22 +476,41 @@ export default function App() {
     );
   };
 
-  const handleSaveClinic = (clinic: Clinic) => {
+  const handleSaveClinic = async (clinic: Clinic) => {
     setClinics((prev) => {
       const index = prev.findIndex((c) => c.id === clinic.id);
+      let updated: Clinic[];
       if (index >= 0) {
-        const copy = [...prev];
-        copy[index] = clinic;
-        return copy;
+        updated = [...prev];
+        updated[index] = clinic;
+      } else {
+        updated = [...prev, clinic];
       }
-      return [...prev, clinic];
+      try {
+        localStorage.setItem('retaj_today_clinics', JSON.stringify(updated));
+      } catch {}
+      return updated;
     });
-    firestoreService.saveClinic(clinic).catch(console.error);
+    try {
+      await firestoreService.saveClinic(clinic);
+    } catch (err) {
+      console.error('Error saving clinic to Firestore:', err);
+    }
   };
 
-  const handleDeleteClinic = (clinicId: string) => {
-    setClinics((prev) => prev.filter((c) => c.id !== clinicId));
-    firestoreService.deleteClinic(clinicId).catch(console.error);
+  const handleDeleteClinic = async (clinicId: string) => {
+    setClinics((prev) => {
+      const updated = prev.filter((c) => c.id !== clinicId);
+      try {
+        localStorage.setItem('retaj_today_clinics', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    try {
+      await firestoreService.deleteClinic(clinicId);
+    } catch (err) {
+      console.error('Error deleting clinic from Firestore:', err);
+    }
   };
 
   const handleToggleHoliday = (holidayId: string) => {

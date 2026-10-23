@@ -11,7 +11,8 @@ import {
   Percent, 
   Heart,
   Award,
-  Pencil
+  Pencil,
+  AlertTriangle
 } from 'lucide-react';
 import { HolidayDiscount } from '../types';
 
@@ -38,6 +39,7 @@ export const HolidaysDiscountsModal: React.FC<HolidaysDiscountsModalProps> = ({
 
   const [isAdding, setIsAdding] = useState(false);
   const [editingHoliday, setEditingHoliday] = useState<HolidayDiscount | null>(null);
+  const [holidayToDelete, setHolidayToDelete] = useState<HolidayDiscount | null>(null);
   const [title, setTitle] = useState('');
   const [dateDesc, setDateDesc] = useState('');
   const [discountPercent, setDiscountPercent] = useState<number>(20);
@@ -313,15 +315,12 @@ export const HolidaysDiscountsModal: React.FC<HolidaysDiscountsModalProps> = ({
                   </button>
 
                   <button
-                    onClick={() => {
-                      if (confirm(`هل أنت متأكد من حذف ${h.title}؟`)) {
-                        onDeleteHoliday(h.id);
-                      }
-                    }}
-                    className="p-1 rounded-lg text-slate-300 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    type="button"
+                    onClick={() => setHolidayToDelete(h)}
+                    className="p-1 rounded-lg text-slate-300 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
                     title="حذف المناسبة"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
                   </button>
                 </div>
               </div>
@@ -337,13 +336,59 @@ export const HolidaysDiscountsModal: React.FC<HolidaysDiscountsModalProps> = ({
           </p>
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors"
+            className="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
           >
             إغلاق
           </button>
         </div>
 
       </div>
+
+      {/* Warning Confirmation Modal for Holidays */}
+      {holidayToDelete && (
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs animate-in fade-in" dir="rtl">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl border border-red-200 dark:border-red-900/60 space-y-4 text-center animate-in zoom-in-95">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-red-100 dark:bg-red-950/80 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-200 dark:border-red-800 shadow-inner">
+              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+            </div>
+
+            <div className="space-y-1">
+              <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                تحذير: تأكيد حذف العرض نهائياً
+              </h4>
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                هل أنت متأكد من رغبتك في حذف مناسبة <span className="text-red-600 dark:text-red-400 font-black">«{holidayToDelete.title}»</span>؟
+              </p>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              سيتم إيقاف وحذف نسبة الخصم ({holidayToDelete.discountPercent}%) من النظام نهائياً.
+            </p>
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setHolidayToDelete(null)}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
+              >
+                إلغاء وتراجع
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteHoliday(holidayToDelete.id);
+                  setHolidayToDelete(null);
+                }}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xs font-black transition-all shadow-md shadow-red-200 dark:shadow-none flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>نعم، حذف نهائي</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

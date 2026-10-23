@@ -99,7 +99,7 @@ export const firestoreService = {
   // Patients
   async savePatient(patient: Patient) {
     try {
-      await setDoc(doc(db, 'patients', patient.id), patient);
+      await setDoc(doc(db, 'patients', patient.id), patient, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `patients/${patient.id}`);
       throw e;
@@ -118,7 +118,7 @@ export const firestoreService = {
   // Examinations
   async saveExamination(exam: Examination) {
     try {
-      await setDoc(doc(db, 'examinations', exam.id), exam);
+      await setDoc(doc(db, 'examinations', exam.id), exam, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `examinations/${exam.id}`);
       throw e;
@@ -137,7 +137,7 @@ export const firestoreService = {
   // Clinics
   async saveClinic(clinic: Clinic) {
     try {
-      await setDoc(doc(db, 'clinics', clinic.id), clinic);
+      await setDoc(doc(db, 'clinics', clinic.id), clinic, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `clinics/${clinic.id}`);
       throw e;
@@ -156,7 +156,7 @@ export const firestoreService = {
   // Holidays
   async saveHoliday(holiday: HolidayDiscount) {
     try {
-      await setDoc(doc(db, 'holidays', holiday.id), holiday);
+      await setDoc(doc(db, 'holidays', holiday.id), holiday, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `holidays/${holiday.id}`);
       throw e;

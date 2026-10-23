@@ -10,7 +10,8 @@ import {
   DollarSign, 
   Stethoscope,
   Sparkles,
-  CheckCircle2
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 import { Clinic } from '../types';
 
@@ -18,8 +19,8 @@ interface ClinicManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
   clinics: Clinic[];
-  onSaveClinic: (clinic: Clinic) => void;
-  onDeleteClinic: (clinicId: string) => void;
+  onSaveClinic: (clinic: Clinic) => Promise<void> | void;
+  onDeleteClinic: (clinicId: string) => Promise<void> | void;
 }
 
 export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
@@ -34,6 +35,8 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
   const [isAdding, setIsAdding] = useState(false);
   const [editingClinicId, setEditingClinicId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [clinicToDelete, setClinicToDelete] = useState<Clinic | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   // Form states
   const [name, setName] = useState('');
@@ -44,6 +47,9 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
   const [isFollowUpFree, setIsFollowUpFree] = useState<boolean>(true);
   const [roomNumber, setRoomNumber] = useState('');
   const [active, setActive] = useState<boolean>(true);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const resetForm = () => {
     setName('');
@@ -71,7 +77,7 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
     setIsAdding(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !doctorName.trim()) {
       return;
@@ -91,16 +97,32 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
       roomNumber: roomNumber.trim() || 'عيادة 1'
     };
 
-    onSaveClinic(clinicData);
-    setFeedback(editingClinicId ? 'تم تحديث بيانات العيادة سحابياً بنجاح!' : 'تمت إضافة العيادة الجديدة وحفظها سحابياً بنجاح!');
-    setTimeout(() => setFeedback(null), 3500);
-    resetForm();
+    setIsSubmitting(true);
+    try {
+      await onSaveClinic(clinicData);
+      setFeedback(editingClinicId ? 'تم تحديث بيانات العيادة سحابياً بنجاح!' : 'تمت إضافة العيادة وحفظها سحابياً بنجاح!');
+      resetForm();
+    } catch {
+      setFeedback('تعذر الحفظ في قاعدة البيانات، يرجى المحاولة ثانية.');
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setFeedback(null), 3500);
+    }
   };
 
-  const handleDelete = (clinicId: string, clinicName: string) => {
-    if (confirm(`هل أنت متأكد من رغبتك في حذف ${clinicName} نهائياً؟`)) {
-      onDeleteClinic(clinicId);
-      setFeedback(`تم حذف ${clinicName} من قاعدة البيانات بنجاح.`);
+  const handleConfirmDelete = async () => {
+    if (!clinicToDelete) return;
+    setIsDeleting(true);
+    const targetId = clinicToDelete.id;
+    const targetName = clinicToDelete.name;
+    try {
+      await onDeleteClinic(targetId);
+      setFeedback(`تم حذف ${targetName} نهائياً من قاعدة البيانات بنجاح.`);
+      setClinicToDelete(null);
+    } catch {
+      setFeedback(`تعذر حذف ${targetName} من السيرفر.`);
+    } finally {
+      setIsDeleting(false);
       setTimeout(() => setFeedback(null), 3500);
     }
   };
@@ -359,11 +381,12 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
                   </button>
 
                   <button
-                    onClick={() => handleDelete(clinic.id, clinic.name)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors"
-                    title="حذف العيادة"
+                    type="button"
+                    onClick={() => setClinicToDelete(clinic)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors cursor-pointer"
+                    title="حذف العيادة نهائياً"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 text-red-500" />
                   </button>
                 </div>
               </div>
@@ -379,13 +402,73 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
           </p>
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors"
+            className="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
           >
             إغلاق
           </button>
         </div>
 
       </div>
+
+      {/* Warning Confirmation Modal Before Deleting Clinic */}
+      {clinicToDelete && (
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs animate-in fade-in" dir="rtl">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl border border-red-200 dark:border-red-900/60 space-y-4 text-center animate-in zoom-in-95">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-red-100 dark:bg-red-950/80 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-200 dark:border-red-800 shadow-inner">
+              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+            </div>
+
+            <div className="space-y-1">
+              <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                تحذير: تأكيد حذف العيادة نهائياً
+              </h4>
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                هل أنت متأكد من رغبتك في حذف عيادة <span className="text-red-600 dark:text-red-400 font-black">«{clinicToDelete.name}»</span>؟
+              </p>
+            </div>
+
+            <div className="bg-amber-50 dark:bg-amber-950/50 p-3 rounded-2xl border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 text-right space-y-1.5">
+              <p className="font-bold flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                طبيب العيادة: <span className="font-extrabold">{clinicToDelete.doctorName}</span>
+              </p>
+              <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                ⚠️ سيتم حذف العيادة نهائياً من قاعدة بيانات السيرفر وقوائم الكشوفات، ولا يمكن التراجع عن هذه الخطوة.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setClinicToDelete(null)}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+              >
+                إلغاء وتراجع
+              </button>
+
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xs font-black transition-all shadow-md shadow-red-200 dark:shadow-none flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block"></span>
+                    <span>جاري الحذف...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>نعم، حذف نهائي</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

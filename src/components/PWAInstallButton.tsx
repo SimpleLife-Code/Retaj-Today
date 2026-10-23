@@ -48,20 +48,9 @@ export const PWAInstallButton: React.FC<Props> = ({ className = '', variant = 'p
         }
         setTimeout(() => setFeedback(null), 4000);
       } else {
-        if (result.reason === 'iframe') {
-          // In iframe (AI Studio preview): open in full window for direct 1-click install
-          setFeedback('جاري فتح التطبيق في نافذة مستقلة لإتمام التثبيت مباشرة...');
-          setTimeout(() => {
-            window.open(window.location.href, '_blank');
-            setFeedback(null);
-          }, 1000);
-        } else if (result.reason === 'ios' || result.reason === 'manual_guide' || !isInstallable) {
-          setShowGuideModal(true);
-          setFeedback(null);
-        } else if (result.reason) {
-          setFeedback(result.reason);
-          setTimeout(() => setFeedback(null), 4000);
-        }
+        // If in iframe or no direct prompt or iOS, show guide modal with direct unblockable link
+        setShowGuideModal(true);
+        setFeedback(null);
       }
     } catch (err) {
       console.error(err);
@@ -206,13 +195,15 @@ export const PWAInstallButton: React.FC<Props> = ({ className = '', variant = 'p
                 <p className="leading-relaxed">
                   نظراً لأنك تشاهد التطبيق داخل إطار المعاينة، المتصفح يحتاج فتح الرابط مباشرة لتثبيت أيقونة التطبيق على سطح المكتب أو شاشة الهاتف بنقرة واحدة.
                 </p>
-                <button
-                  onClick={openInFullWindow}
-                  className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+                <a
+                  href={window.location.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-2.5 bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm text-center"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  <span>فتح الرابط المباشر وتثبيت التطبيق الآن</span>
-                </button>
+                  <span>فتح الرابط المباشر وتثبيت التطبيق الآن ↗</span>
+                </a>
               </div>
             ) : (
               <div className="space-y-3 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300">

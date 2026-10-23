@@ -35,23 +35,18 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   
+  const url = new URL(event.request.url);
+  // Only handle same-origin requests; never intercept Firebase, Google APIs, or external endpoints
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith('/api') || url.pathname.includes('firestore') || url.pathname.includes('identitytoolkit')) return;
+
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Return cached and refresh in background
-        fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, networkResponse.clone());
-            });
-          }
-        }).catch(() => {});
         return cachedResponse;
       }
-      return fetch(event.request).then((networkResponse) => {
-        return networkResponse;
-      }).catch(() => {
-        // Fallback for navigation
+      return fetch(event.request).catch(() => {
+        // Fallback for navigation requests when offline
         if (event.request.mode === 'navigate') {
           return caches.match('/index.html');
         }
