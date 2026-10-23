@@ -185,6 +185,9 @@ export default function App() {
             loadedPatients.push(doc.data() as Patient);
           });
           setPatients(loadedPatients);
+          try {
+            localStorage.setItem('retaj_today_patients', JSON.stringify(loadedPatients));
+          } catch {}
         }
       }, (error) => {
         handleFirestoreError(error, OperationType.GET, 'patients');
@@ -200,6 +203,9 @@ export default function App() {
             loadedExams.push(doc.data() as Examination);
           });
           setExaminations(loadedExams);
+          try {
+            localStorage.setItem('retaj_today_examinations', JSON.stringify(loadedExams));
+          } catch {}
         }
       }, (error) => {
         handleFirestoreError(error, OperationType.GET, 'examinations');
@@ -215,9 +221,15 @@ export default function App() {
             loadedClinics.push(doc.data() as Clinic);
           });
           setClinics(loadedClinics);
+          try {
+            localStorage.setItem('retaj_today_clinics', JSON.stringify(loadedClinics));
+          } catch {}
         } else {
-          // If Firestore is fresh and empty, seed initial UAE clinics
-          INITIAL_CLINICS.forEach((c) => firestoreService.saveClinic(c).catch(() => {}));
+          // If Firestore is fresh and empty, seed initial clinics only if no local storage
+          const savedLocally = localStorage.getItem('retaj_today_clinics');
+          if (!savedLocally) {
+            INITIAL_CLINICS.forEach((c) => firestoreService.saveClinic(c).catch(() => {}));
+          }
         }
       }, (error) => {
         handleFirestoreError(error, OperationType.GET, 'clinics');
@@ -233,9 +245,14 @@ export default function App() {
             loadedHolidays.push(doc.data() as HolidayDiscount);
           });
           setHolidays(loadedHolidays);
+          try {
+            localStorage.setItem('retaj_today_holidays', JSON.stringify(loadedHolidays));
+          } catch {}
         } else {
-          // If Firestore is fresh and empty, seed initial UAE holidays
-          INITIAL_HOLIDAYS_DISCOUNTS.forEach((h) => firestoreService.saveHoliday(h).catch(() => {}));
+          const savedLocally = localStorage.getItem('retaj_today_holidays');
+          if (!savedLocally) {
+            INITIAL_HOLIDAYS_DISCOUNTS.forEach((h) => firestoreService.saveHoliday(h).catch(() => {}));
+          }
         }
       }, (error) => {
         handleFirestoreError(error, OperationType.GET, 'holidays');
@@ -283,8 +300,83 @@ export default function App() {
   const [currentPrintExam, setCurrentPrintExam] = useState<Examination | null>(null);
   const [selectedPatientFile, setSelectedPatientFile] = useState<Patient | null>(null);
 
+  // Close top modal or step back in tabs (دعم زر الرجوع من الهاتف أو Esc من اللاب)
+  const closeTopModalOrGoBack = () => {
+    if (isPrintReceiptOpen) {
+      setIsPrintReceiptOpen(false);
+    } else if (selectedPatientFile) {
+      setSelectedPatientFile(null);
+    } else if (isNewExamOpen) {
+      setIsNewExamOpen(false);
+    } else if (isReExamAlertsOpen) {
+      setIsReExamAlertsOpen(false);
+    } else if (isClinicsModalOpen) {
+      setIsClinicsModalOpen(false);
+    } else if (isHolidaysModalOpen) {
+      setIsHolidaysModalOpen(false);
+    } else if (isDataBackupOpen) {
+      setIsDataBackupOpen(false);
+    } else if (activeTab !== 'organizer') {
+      setActiveTab('organizer');
+    }
+  };
+
+  // Push history entry whenever opening a modal so mobile back button pops it
+  const pushModalHistory = () => {
+    try {
+      window.history.pushState({ modalOpen: true }, '');
+    } catch {}
+  };
+
+  // Listen for Mobile Phone Back Button (popstate) & Laptop Esc Key
+  useEffect(() => {
+    const handlePopState = () => {
+      closeTopModalOrGoBack();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeTopModalOrGoBack();
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [
+    isPrintReceiptOpen,
+    selectedPatientFile,
+    isNewExamOpen,
+    isReExamAlertsOpen,
+    isClinicsModalOpen,
+    isHolidaysModalOpen,
+    isDataBackupOpen,
+    activeTab
+  ]);
+
+  // Warning prompt before closing or refreshing the platform (رسالة تحذيرية قبل غلق المنصة)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (currentUser) {
+        e.preventDefault();
+        e.returnValue = 'هل أنت متأكد من مغادرة منصة Retaj Today؟ يرجى التأكد من اكتمال حفظ كافة الكشوفات والمواعيد.';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [currentUser]);
+
   // Handlers with direct Firebase saving
   const handleOpenNewExam = (patientId?: string) => {
+    pushModalHistory();
     setDefaultPatientIdForExam(patientId);
     setIsNewExamOpen(true);
   };
@@ -292,11 +384,13 @@ export default function App() {
   const handleSelectPatient = (patientId: string) => {
     const pat = patients.find((p) => p.id === patientId);
     if (pat) {
+      pushModalHistory();
       setSelectedPatientFile(pat);
     }
   };
 
   const handlePrintExam = (exam: Examination) => {
+    pushModalHistory();
     setCurrentPrintExam(exam);
     setIsPrintReceiptOpen(true);
   };
@@ -473,10 +567,10 @@ export default function App() {
       <Header
         examinations={examinations}
         onOpenNewExam={() => handleOpenNewExam()}
-        onOpenReExamAlerts={() => setIsReExamAlertsOpen(true)}
-        onOpenClinics={() => setIsClinicsModalOpen(true)}
-        onOpenHolidays={() => setIsHolidaysModalOpen(true)}
-        onOpenDataBackup={() => setIsDataBackupOpen(true)}
+        onOpenReExamAlerts={() => { pushModalHistory(); setIsReExamAlertsOpen(true); }}
+        onOpenClinics={() => { pushModalHistory(); setIsClinicsModalOpen(true); }}
+        onOpenHolidays={() => { pushModalHistory(); setIsHolidaysModalOpen(true); }}
+        onOpenDataBackup={() => { pushModalHistory(); setIsDataBackupOpen(true); }}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         searchQuery={searchQuery}
@@ -501,8 +595,8 @@ export default function App() {
             onOpenNewExam={() => handleOpenNewExam()}
             onSelectPatient={handleSelectPatient}
             onPrintExam={handlePrintExam}
-            onOpenReExamAlerts={() => setIsReExamAlertsOpen(true)}
-            onOpenHolidays={() => setIsHolidaysModalOpen(true)}
+            onOpenReExamAlerts={() => { pushModalHistory(); setIsReExamAlertsOpen(true); }}
+            onOpenHolidays={() => { pushModalHistory(); setIsHolidaysModalOpen(true); }}
             onMarkFollowUpComplete={handleMarkFollowUpComplete}
           />
         )}
@@ -539,7 +633,7 @@ export default function App() {
                 </p>
               </div>
               <button
-                onClick={() => setIsClinicsModalOpen(true)}
+                onClick={() => { pushModalHistory(); setIsClinicsModalOpen(true); }}
                 className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" />
@@ -573,7 +667,7 @@ export default function App() {
                   </div>
 
                   <button
-                    onClick={() => setIsClinicsModalOpen(true)}
+                    onClick={() => { pushModalHistory(); setIsClinicsModalOpen(true); }}
                     className="w-full py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors"
                   >
                     تعديل بيانات العيادة
@@ -597,7 +691,7 @@ export default function App() {
                 </p>
               </div>
               <button
-                onClick={() => setIsHolidaysModalOpen(true)}
+                onClick={() => { pushModalHistory(); setIsHolidaysModalOpen(true); }}
                 className="px-4 py-2 bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-700 hover:to-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" />
@@ -677,7 +771,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <PWAInstallButton variant="compact" />
             <button
-              onClick={() => setIsDataBackupOpen(true)}
+              onClick={() => { pushModalHistory(); setIsDataBackupOpen(true); }}
               className="text-sky-600 dark:text-sky-400 hover:underline font-bold"
             >
               النسخ الاحتياطي والمزامنة السحابية

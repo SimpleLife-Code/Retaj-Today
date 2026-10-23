@@ -95,11 +95,11 @@ export const HolidaysDiscountsModal: React.FC<HolidaysDiscountsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
+      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-4xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[94dvh] sm:h-auto sm:max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-5 sm:p-6 bg-gradient-to-r from-amber-600 via-rose-600 to-sky-700 text-white flex items-center justify-between shrink-0">
+        <div className="p-4 sm:p-6 bg-gradient-to-r from-amber-600 via-rose-600 to-sky-700 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
               <Sparkles className="w-6 h-6 text-amber-300 animate-spin-slow" />

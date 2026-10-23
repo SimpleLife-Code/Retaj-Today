@@ -20,8 +20,8 @@ export const PrintReceiptModal: React.FC<PrintReceiptModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
+      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[94dvh] sm:h-auto sm:max-h-[90vh]">
         
         {/* Modal Top Bar (Hidden when printing) */}
         <div className="p-4 bg-slate-800 text-white flex items-center justify-between print:hidden">
@@ -48,7 +48,7 @@ export const PrintReceiptModal: React.FC<PrintReceiptModalProps> = ({
         </div>
 
         {/* Printable Area (Always crisp white background for print) */}
-        <div id="printable-receipt" className="p-6 sm:p-8 bg-white text-slate-900 space-y-5">
+        <div id="printable-receipt" className="p-5 sm:p-8 bg-white text-slate-900 space-y-5 flex-1 overflow-y-auto overscroll-contain">
           
           {/* Receipt Header with Retaj Logo */}
           <div className="text-center pb-4 border-b-2 border-slate-800 space-y-2">

@@ -33,6 +33,7 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
 
   const [isAdding, setIsAdding] = useState(false);
   const [editingClinicId, setEditingClinicId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   // Form states
   const [name, setName] = useState('');
@@ -73,7 +74,6 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !doctorName.trim()) {
-      alert('يرجى ملء اسم العيادة واسم الطبيب');
       return;
     }
 
@@ -92,22 +92,32 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
     };
 
     onSaveClinic(clinicData);
+    setFeedback(editingClinicId ? 'تم تحديث بيانات العيادة سحابياً بنجاح!' : 'تمت إضافة العيادة الجديدة وحفظها سحابياً بنجاح!');
+    setTimeout(() => setFeedback(null), 3500);
     resetForm();
   };
 
+  const handleDelete = (clinicId: string, clinicName: string) => {
+    if (confirm(`هل أنت متأكد من رغبتك في حذف ${clinicName} نهائياً؟`)) {
+      onDeleteClinic(clinicId);
+      setFeedback(`تم حذف ${clinicName} من قاعدة البيانات بنجاح.`);
+      setTimeout(() => setFeedback(null), 3500);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
+      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-4xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[94dvh] sm:h-auto sm:max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-5 sm:p-6 bg-gradient-to-r from-sky-800 via-sky-700 to-slate-900 text-white flex items-center justify-between shrink-0">
+        <div className="p-4 sm:p-6 bg-gradient-to-r from-sky-800 via-sky-700 to-slate-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-              <Building2 className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+              <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-black">عيادات مركز رتاج الطبي • Retaj Today</h3>
+                <h3 className="text-lg sm:text-xl font-black">عيادات مركز رتاج الطبي • Retaj Today</h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20">🇦🇪 الإمارات</span>
               </div>
               <p className="text-xs text-sky-200 mt-0.5">
@@ -123,6 +133,14 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
             ✕
           </button>
         </div>
+
+        {/* Feedback Banner */}
+        {feedback && (
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 border-b border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span>{feedback}</span>
+          </div>
+        )}
 
         {/* Add / Edit Form or Toggle Bar */}
         <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 shrink-0">
@@ -341,11 +359,7 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
                   </button>
 
                   <button
-                    onClick={() => {
-                      if (confirm(`هل أنت متأكد من رغبتك في حذف ${clinic.name}؟`)) {
-                        onDeleteClinic(clinic.id);
-                      }
-                    }}
+                    onClick={() => handleDelete(clinic.id, clinic.name)}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors"
                     title="حذف العيادة"
                   >

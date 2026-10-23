@@ -222,19 +222,19 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[94vh]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
+      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-3xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[94dvh] sm:h-auto sm:max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-5 sm:p-6 bg-gradient-to-r from-sky-700 via-sky-800 to-slate-900 dark:from-slate-900 dark:via-sky-950 dark:to-slate-950 text-white flex items-center justify-between shrink-0">
+        <div className="p-4 sm:p-6 bg-gradient-to-r from-sky-700 via-sky-800 to-slate-900 dark:from-slate-900 dark:via-sky-950 dark:to-slate-950 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-              <Stethoscope className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+              <Stethoscope className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-black">تسجيل كشف طبي جديد • Retaj Today</h3>
+              <h3 className="text-lg sm:text-xl font-black">تسجيل كشف طبي جديد • Retaj Today</h3>
               <p className="text-xs text-sky-200 mt-0.5">
-                دولة الإمارات 🇦🇪 • تسجيل العميل وحفظ السجل مباشرة في فايربيس السحابي
+                دولة الإمارات 🇦🇪 • تسجيل العميل وحفظ السجل مباشرة في المزامنة السحابية
               </p>
             </div>
           </div>
@@ -669,29 +669,29 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 sm:p-5 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div className="p-3 sm:p-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2 shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-colors"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-colors text-center"
           >
             إلغاء
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <button
               type="button"
               onClick={() => handleSubmit(true)}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-xs"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xs"
             >
               <Printer className="w-4 h-4" />
-              <span>حفظ في Firebase وطباعة الإيصال</span>
+              <span>حفظ وطباعة الإيصال</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleSubmit(false)}
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white text-xs sm:text-sm font-extrabold transition-all shadow-md shadow-sky-200 dark:shadow-none flex items-center gap-2"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white text-xs sm:text-sm font-extrabold transition-all shadow-md shadow-sky-200 dark:shadow-none flex items-center justify-center gap-2"
             >
               <Check className="w-4 h-4" />
               <span>حفظ الكشف في السجل</span>
