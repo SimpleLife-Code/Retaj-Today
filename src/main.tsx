@@ -5,8 +5,9 @@ import './index.css';
 // Register Service Worker for PWA installability
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
+    const swUrl = `${import.meta.env.BASE_URL}sw.js`;
     navigator.serviceWorker
-      .register('/sw.js')
+      .register(swUrl)
       .then((reg) => {
         console.log('Retaj Today PWA ServiceWorker registered with scope:', reg.scope);
       })

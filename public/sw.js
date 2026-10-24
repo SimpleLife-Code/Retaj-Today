@@ -1,14 +1,14 @@
 const CACHE_NAME = 'retaj-medical-v1';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/logo.png',
-  '/favicon.ico',
-  '/favicon.png',
-  '/pwa-192x192.png',
-  '/pwa-512x512.png',
-  '/apple-touch-icon.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './logo.png',
+  './favicon.ico',
+  './favicon.png',
+  './pwa-192x192.png',
+  './pwa-512x512.png',
+  './apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -49,7 +49,7 @@ self.addEventListener('fetch', (event) => {
       return fetch(event.request).catch(() => {
         // Fallback for navigation requests when offline
         if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
+          return caches.match('./index.html').then((res) => res || caches.match('./'));
         }
       });
     })
