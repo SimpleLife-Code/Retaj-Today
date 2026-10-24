@@ -16,6 +16,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
+import { BrandLogo } from './BrandLogo';
 import { Examination } from '../types';
 
 interface HeaderProps {
@@ -98,15 +99,8 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Brand Logo & Name: Retaj Today | ريتاج اليوم */}
           <div className="flex items-center gap-3.5">
-            <div className="relative p-1 bg-white dark:bg-slate-800 rounded-2xl shadow-xs border border-slate-100 dark:border-slate-700 flex items-center justify-center shrink-0">
-              <img 
-                src="/logo.png" 
-                alt="Retaj Today - ريتاج اليوم" 
-                className="h-12 w-auto object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/public/assets/aistudio/images_ed428152.png';
-                }}
-              />
+            <div className="relative p-1 bg-white dark:bg-slate-800 rounded-2xl shadow-xs border border-slate-100 dark:border-slate-700 flex items-center justify-center shrink-0 w-12 h-12 overflow-hidden">
+              <BrandLogo className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="flex items-center gap-2">
