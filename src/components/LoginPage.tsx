@@ -10,6 +10,7 @@ import {
   Moon
 } from 'lucide-react';
 import { signInWithGoogle, logoutUser, isEmailAllowed } from '../firebase';
+import { BrandLogo } from './BrandLogo';
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
@@ -53,7 +54,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/40 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex flex-col justify-between p-4 sm:p-6 transition-colors duration-200" dir="rtl">
+    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-slate-50 via-sky-50/40 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex flex-col justify-between p-4 sm:p-6 transition-colors duration-200" dir="rtl">
       
       {/* Top Bar with Dark Mode Toggle */}
       <div className="max-w-6xl w-full mx-auto flex items-center justify-between">
@@ -80,22 +81,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <div className="absolute top-0 right-0 w-40 h-40 bg-sky-500/10 rounded-full blur-2xl pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 w-40 h-40 bg-red-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
-          {/* Logo as Loader / Hero Icon */}
-          <div className="relative mx-auto w-28 h-28 flex items-center justify-center">
-            {/* Animated pulsing glow rings */}
-            <div className="absolute inset-0 rounded-full bg-sky-500/15 dark:bg-sky-400/10 animate-ping pointer-events-none"></div>
-            <div className="absolute inset-1.5 rounded-full border-2 border-sky-500/30 dark:border-sky-400/20 animate-spin-slow pointer-events-none"></div>
+          {/* Logo as Steady Hero Icon */}
+          <div className="relative mx-auto w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
+            {/* Soft decorative ring */}
+            <div className="absolute inset-0 rounded-2xl bg-sky-500/10 dark:bg-sky-400/10 border border-sky-400/20 pointer-events-none"></div>
             
             {/* Central Logo */}
-            <div className="relative w-24 h-24 rounded-2xl bg-white dark:bg-slate-800 p-2 shadow-md border border-slate-100 dark:border-slate-700 flex items-center justify-center">
-              <img
-                src="/logo.png"
-                alt="Retaj Today - ريتاج اليوم"
-                className={`w-full h-full object-contain ${loading ? 'animate-pulse scale-95' : 'hover:scale-105'} transition-all`}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/public/assets/aistudio/images_ed428152.png';
-                }}
-              />
+            <div className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-xl bg-white dark:bg-slate-800 p-2 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center overflow-hidden">
+              <BrandLogo className="w-full h-full object-contain" />
             </div>
           </div>
 

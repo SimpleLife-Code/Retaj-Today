@@ -13,6 +13,7 @@ import { DataBackupModal } from './components/DataBackupModal';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { LoginPage } from './components/LoginPage';
 import { LogoLoader } from './components/LogoLoader';
+import { BrandLogo } from './components/BrandLogo';
 import { 
   INITIAL_CLINICS, 
   INITIAL_HOLIDAYS_DISCOUNTS, 
@@ -595,7 +596,7 @@ export default function App() {
 
   // 3. Main Authenticated Platform
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200" dir="rtl">
+    <div className="min-h-screen min-h-[100dvh] bg-slate-100 dark:bg-slate-950 flex flex-col text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200" dir="rtl">
       
       {/* Top Header */}
       <Header
@@ -790,14 +791,9 @@ export default function App() {
       <footer className="mt-auto bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-3 px-4 print:hidden transition-colors">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-2">
-            <img 
-              src="/logo.png" 
-              alt="Retaj Today - ريتاج اليوم" 
-              className="h-6 w-auto object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/public/assets/aistudio/images_ed428152.png';
-              }}
-            />
+            <div className="w-6 h-6 shrink-0 flex items-center justify-center">
+              <BrandLogo className="w-full h-full object-contain" />
+            </div>
             <span className="font-bold text-slate-800 dark:text-white">Retaj Today | ريتاج اليوم • مركز رتاج الطبي (الإمارات 🇦🇪)</span>
             <span>• الحساب: {currentUser.email}</span>
           </div>

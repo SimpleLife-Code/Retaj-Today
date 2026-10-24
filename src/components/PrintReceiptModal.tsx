@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Printer, CheckCircle2, Calendar, Phone, Stethoscope, AlertCircle } from 'lucide-react';
 import { Examination } from '../types';
+import { BrandLogo } from './BrandLogo';
 
 interface PrintReceiptModalProps {
   isOpen: boolean;
@@ -53,14 +54,9 @@ export const PrintReceiptModal: React.FC<PrintReceiptModalProps> = ({
           {/* Receipt Header with Retaj Logo */}
           <div className="text-center pb-4 border-b-2 border-slate-800 space-y-2">
             <div className="flex items-center justify-center gap-3">
-              <img 
-                src="/logo.png" 
-                alt="Retaj Today" 
-                className="h-16 w-auto object-contain mx-auto"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/public/assets/aistudio/images_ed428152.png';
-                }}
-              />
+              <div className="h-16 w-16 mx-auto flex items-center justify-center overflow-hidden">
+                <BrandLogo className="w-full h-full object-contain" />
+              </div>
             </div>
             <div>
               <h2 className="text-xl font-black text-slate-900 tracking-tight">
