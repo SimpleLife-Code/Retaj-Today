@@ -1,10 +1,10 @@
 {
-  "id": "/",
-  "name": "Retaj Today | مركز رتاج الطبي",
+  "id": "/Retaj-Today/",
+  "name": "Retaj Today | Ù…Ø±ÙƒØ² Ø±ØªØ§Ø¬ Ø§Ù„Ø·Ø¨ÙŠ",
   "short_name": "Retaj Today",
-  "description": "Retaj Today - نظام تنظيم وقت الموظف وكشوفات إعادة الفحص والخصومات والأعياد الرسمية بدولة الإمارات.",
-  "start_url": "/",
-  "scope": "/",
+  "description": "Retaj Today - Ù†Ø¸Ø§Ù… ØªÙ†Ø¸ÙŠÙ… ÙˆÙ‚Øª Ø§Ù„Ù…ÙˆØ¸Ù ÙˆÙƒØ´ÙˆÙØ§Øª Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„ÙØ­Øµ ÙˆØ§Ù„Ø®ØµÙˆÙ…Ø§Øª ÙˆØ§Ù„Ø£Ø¹ÙŠØ§Ø¯ Ø§Ù„Ø±Ø³Ù…ÙŠØ© Ø¨Ø¯ÙˆÙ„Ø© Ø§Ù„Ø¥Ù…Ø§Ø±Ø§Øª.",
+  "start_url": "/Retaj-Today/",
+  "scope": "/Retaj-Today/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
@@ -12,19 +12,19 @@
   "categories": ["medical", "health", "productivity", "business"],
   "icons": [
     {
-      "src": "/pwa-192x192.png",
+      "src": "/Retaj-Today/pwa-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/pwa-512x512.png",
+      "src": "/Retaj-Today/pwa-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/pwa-512x512.png",
+      "src": "/Retaj-Today/pwa-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
