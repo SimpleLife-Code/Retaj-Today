@@ -147,10 +147,16 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
     paymentStatus = 'متبقي';
   }
 
+  const [formError, setFormError] = useState<string | null>(null);
+
   // Handle Submit
   const handleSubmit = (printReceipt: boolean) => {
+    setFormError(null);
     const selectedClinic = clinics.find((c) => c.id === selectedClinicId);
-    if (!selectedClinic) return;
+    if (!selectedClinic) {
+      setFormError('يرجى اختيار العيادة الطبية أولاً');
+      return;
+    }
 
     let patientName = '';
     let patientPhone = '';
@@ -158,7 +164,7 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
 
     if (isNewPatient) {
       if (!newPatientName.trim()) {
-        alert('يرجى إدخال اسم المريض');
+        setFormError('يرجى كتابة اسم المريض');
         return;
       }
       patientId = `pat-${Date.now()}`;
@@ -167,7 +173,7 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
     } else {
       const p = patients.find((pat) => pat.id === selectedPatientId);
       if (!p) {
-        alert('يرجى اختيار مريض من القائمة أو تسجيل مريض جديد');
+        setFormError('يرجى اختيار مريض من القائمة أو الضغط على "تسجيل مريض جديد"');
         return;
       }
       patientName = p.fullName;
@@ -249,8 +255,16 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6 overscroll-contain">
           
+          {/* Form Error Banner */}
+          {formError && (
+            <div className="p-3 bg-red-50 dark:bg-red-950/60 border border-red-300 dark:border-red-800 text-red-800 dark:text-red-300 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
+              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
+
           {/* Section 1: Patient Selection */}
           <div className="bg-slate-50 dark:bg-slate-800/60 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-3">

@@ -9,12 +9,13 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "deploy": "npm run build && gh-pages -d dist -b gh-pages"
+    "deploy": "cross-env BUILD_FOR_GH=true npm run build && gh-pages -d dist -b gh-pages"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.1.1",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "firebase": "^13.1.0",
