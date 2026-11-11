@@ -178,20 +178,20 @@ export const DataBackupModal: React.FC<DataBackupModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
-      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[94dvh] sm:h-auto sm:max-h-[90vh]">
+      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[92dvh] sm:h-auto sm:max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-4 sm:p-6 bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-sky-600/30 border border-sky-400/30 flex items-center justify-center">
-              <Database className="w-6 h-6 text-sky-300" />
+        <div className="p-3.5 sm:p-5 bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-sky-600/30 border border-sky-400/30 flex items-center justify-center shrink-0">
+              <Database className="w-5 h-5 text-sky-300" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-black">إدارة البيانات والمزامنة السحابية</h3>
+                <h3 className="text-base sm:text-xl font-black">إدارة البيانات والمزامنة السحابية</h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20">🇦🇪 الإمارات</span>
               </div>
-              <p className="text-xs text-sky-200 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-sky-200 mt-0.5">
                 مزامنة وحفظ سحابي فوري وتصدير واستيراد النسخ الاحتياطية
               </p>
             </div>
@@ -199,14 +199,15 @@ export const DataBackupModal: React.FC<DataBackupModalProps> = ({
 
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-lg font-bold"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-base font-bold shrink-0 cursor-pointer"
+            title="إغلاق"
           >
             ✕
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-5 sm:p-6 space-y-5 overflow-y-auto max-h-[75vh]">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto overscroll-contain flex-1">
           
           {/* Notifications */}
           {successMsg && (

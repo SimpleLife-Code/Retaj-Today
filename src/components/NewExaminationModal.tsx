@@ -223,25 +223,26 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
-      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-3xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[94dvh] sm:h-auto sm:max-h-[90vh]">
+      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-3xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[92dvh] sm:h-auto sm:max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-4 sm:p-6 bg-gradient-to-r from-sky-700 via-sky-800 to-slate-900 dark:from-slate-900 dark:via-sky-950 dark:to-slate-950 text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-              <Stethoscope className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        <div className="p-3.5 sm:p-5 bg-gradient-to-r from-sky-700 via-sky-800 to-slate-900 dark:from-slate-900 dark:via-sky-950 dark:to-slate-950 text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shrink-0">
+              <Stethoscope className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-lg sm:text-xl font-black">تسجيل كشف طبي جديد • Retaj Today</h3>
-              <p className="text-xs text-sky-200 mt-0.5">
-                دولة الإمارات 🇦🇪 • تسجيل العميل وحفظ السجل مباشرة في المزامنة السحابية
+              <h3 className="text-base sm:text-xl font-black">تسجيل كشف طبي جديد</h3>
+              <p className="text-[11px] sm:text-xs text-sky-200 mt-0.5">
+                دولة الإمارات 🇦🇪 • حفظ فوري في السجل والمزامنة السحابية
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-lg font-bold"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-base font-bold shrink-0 cursor-pointer"
+            title="إغلاق"
           >
             ✕
           </button>

@@ -22,26 +22,27 @@ export const PrintReceiptModal: React.FC<PrintReceiptModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
-      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[94dvh] sm:h-auto sm:max-h-[90vh]">
+      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[92dvh] sm:h-auto sm:max-h-[90vh]">
         
         {/* Modal Top Bar (Hidden when printing) */}
-        <div className="p-4 bg-slate-800 text-white flex items-center justify-between print:hidden">
-          <div className="flex items-center gap-2">
-            <Printer className="w-5 h-5 text-sky-400" />
-            <span className="text-sm font-bold">معاينة وطباعة إيصال الكشف الطبي • Retaj Today</span>
+        <div className="p-3.5 sm:p-4 bg-slate-800 text-white flex items-center justify-between gap-2 print:hidden shrink-0">
+          <div className="flex items-center gap-2 truncate">
+            <Printer className="w-4 h-4 sm:w-5 sm:h-5 text-sky-400 shrink-0" />
+            <span className="text-xs sm:text-sm font-bold truncate">إيصال الكشف الطبي • Retaj Today</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handlePrint}
-              className="px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
+              className="px-3 sm:px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>طباعة الإيصال الآن</span>
+              <span>طباعة</span>
             </button>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-sm font-bold"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-xs sm:text-sm font-bold cursor-pointer"
+              title="إغلاق"
             >
               ✕
             </button>

@@ -128,30 +128,31 @@ export const ReExamAlertsModal: React.FC<ReExamAlertsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
-      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-4xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[94dvh] sm:h-auto sm:max-h-[90vh]">
+      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-4xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[92dvh] sm:h-auto sm:max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-4 sm:p-6 bg-gradient-to-r from-red-600 via-rose-600 to-sky-700 text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-              <Bell className="w-6 h-6 text-white animate-bounce" />
+        <div className="p-3.5 sm:p-5 bg-gradient-to-r from-red-600 via-rose-600 to-sky-700 text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shrink-0">
+              <Bell className="w-5 h-5 text-white animate-bounce" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-black">نظام إشعارات وتنبيهات إعادة الكشف • Retaj Today</h3>
+                <h3 className="text-base sm:text-xl font-black">نظام إشعارات إعادة الكشف</h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 border border-white/30">
-                  هام ومستعجل
+                  هام
                 </span>
               </div>
-              <p className="text-xs text-white/90 mt-0.5">
-                متابعة دقيقة لكل مريض وتاريخ استحقاق إعادة الكشف المجاني داخل دولة الإمارات 🇦🇪
+              <p className="text-[11px] sm:text-xs text-white/90 mt-0.5">
+                تتبع استحقاق إعادة الكشف المجاني للمرضى بدولة الإمارات 🇦🇪
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-lg font-bold"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-base font-bold shrink-0 cursor-pointer"
+            title="إغلاق"
           >
             ✕
           </button>

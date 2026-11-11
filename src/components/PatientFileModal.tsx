@@ -88,28 +88,28 @@ export const PatientFileModal: React.FC<PatientFileModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
-      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-4xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[94dvh] sm:h-auto sm:max-h-[90vh]">
+      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-4xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[92dvh] sm:h-auto sm:max-h-[90vh]">
         
         {/* Header Profile */}
-        <div className="p-4 sm:p-6 bg-gradient-to-r from-sky-800 via-sky-900 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-sky-600 text-white flex items-center justify-center text-xl font-black shadow-lg">
+        <div className="p-3.5 sm:p-6 bg-gradient-to-r from-sky-800 via-sky-900 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-sky-600 text-white flex items-center justify-center text-lg sm:text-xl font-black shadow-lg shrink-0">
               {patient.fullName.charAt(0)}
             </div>
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-xl sm:text-2xl font-black">{patient.fullName}</h3>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-white/20 border border-white/30 text-sky-200">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <h3 className="text-base sm:text-2xl font-black">{patient.fullName}</h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-black bg-white/20 border border-white/30 text-sky-200">
                   {patient.fileNumber}
                 </span>
-                <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-white/10 text-white">
+                <span className="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-semibold bg-white/10 text-white">
                   {patient.gender} • {patient.age} سنة
                 </span>
                 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                   🇦🇪 الإمارات
                 </span>
               </div>
-              <p className="text-xs text-sky-200 mt-1 flex items-center gap-3" dir="ltr">
+              <p className="text-[11px] sm:text-xs text-sky-200 mt-1 flex flex-wrap items-center gap-2 sm:gap-3" dir="ltr">
                 <span className="flex items-center gap-1">
                   <Phone className="w-3.5 h-3.5" />
                   {patient.phone}
@@ -120,10 +120,10 @@ export const PatientFileModal: React.FC<PatientFileModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-center">
+          <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
             <button
               onClick={handleWhatsApp}
-              className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5"
+              className="flex-1 sm:flex-none p-2 sm:p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               title="مراسلة المريض عبر واتساب"
             >
               <Send className="w-4 h-4" />
@@ -132,15 +132,16 @@ export const PatientFileModal: React.FC<PatientFileModalProps> = ({
 
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors flex items-center gap-1.5"
+              className="flex-1 sm:flex-none p-2 sm:p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Edit2 className="w-4 h-4" />
-              <span>{isEditing ? 'إلغاء التعديل' : 'تعديل البيانات'}</span>
+              <span>{isEditing ? 'إلغاء' : 'تعديل البيانات'}</span>
             </button>
 
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-lg font-bold"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-base font-bold shrink-0 cursor-pointer"
+              title="إغلاق"
             >
               ✕
             </button>

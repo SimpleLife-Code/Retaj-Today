@@ -98,54 +98,57 @@ export const HolidaysDiscountsModal: React.FC<HolidaysDiscountsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
-      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-4xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[94dvh] sm:h-auto sm:max-h-[90vh]">
+      <div className="bg-white dark:bg-slate-900 w-full sm:max-w-4xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[92dvh] sm:h-auto sm:max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-4 sm:p-6 bg-gradient-to-r from-amber-600 via-rose-600 to-sky-700 text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-              <Sparkles className="w-6 h-6 text-amber-300 animate-spin-slow" />
+        <div className="p-3.5 sm:p-5 bg-gradient-to-r from-amber-600 via-rose-600 to-sky-700 text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shrink-0">
+              <Sparkles className="w-5 h-5 text-amber-300 animate-spin-slow" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-black">أعياد ومناسبات الإمارات والخصومات</h3>
+                <h3 className="text-base sm:text-xl font-black">أعياد ومناسبات الإمارات والخصومات</h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20">🇦🇪 دولة الإمارات</span>
               </div>
-              <p className="text-xs text-white/90 mt-0.5">
-                إدارة الخصومات الرسمية وإضافة عروض مخصصة يدوياً لتطبيقها على كشوفات المرضى
+              <p className="text-[11px] sm:text-xs text-white/90 mt-0.5">
+                إدارة الخصومات الرسمية وتطبيقها على كشوفات المرضى
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-lg font-bold"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-base font-bold shrink-0 cursor-pointer"
+            title="إغلاق"
           >
             ✕
           </button>
         </div>
 
-        {/* Action Bar */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 shrink-0">
-          {!isAdding ? (
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                  قائمة الأعياد والمناسبات والخصومات ({holidays.length})
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  يمكنك تفعيل أو إيقاف أي مناسبة بنقرة واحدة لتطبيق الخصم تلقائياً عند تسجيل الكشف للمرضى
-                </p>
-              </div>
+        {/* Scrollable Container covering both form and holidays list on mobile */}
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          {/* Action Bar */}
+          <div className="p-3.5 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+            {!isAdding ? (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                    قائمة الأعياد والمناسبات والخصومات ({holidays.length})
+                  </h4>
+                  <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
+                    يمكنك تفعيل أو إيقاف أي مناسبة بنقرة واحدة لتطبيق الخصم تلقائياً عند تسجيل الكشف للمرضى
+                  </p>
+                </div>
 
-              <button
-                onClick={() => setIsAdding(true)}
-                className="px-4 py-2 bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-700 hover:to-rose-700 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-1.5"
-              >
-                <Plus className="w-4 h-4" />
-                <span>+ إضافة خصم أو مناسبة يدوياً</span>
-              </button>
-            </div>
+                <button
+                  onClick={() => setIsAdding(true)}
+                  className="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-700 hover:to-rose-700 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ إضافة خصم أو مناسبة يدوياً</span>
+                </button>
+              </div>
           ) : (
             <form onSubmit={handleFormSubmit} className="space-y-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-amber-200 dark:border-amber-800">
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
@@ -227,20 +230,20 @@ export const HolidaysDiscountsModal: React.FC<HolidaysDiscountsModalProps> = ({
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg"
+                  className="flex-1 sm:flex-none px-4 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-300 transition-colors cursor-pointer text-center"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-amber-600 text-white text-xs font-extrabold rounded-lg hover:bg-amber-700 flex items-center gap-1.5 shadow-sm"
+                  className="flex-1 sm:flex-none px-6 py-2.5 bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-700 hover:to-rose-700 active:scale-95 text-white text-xs sm:text-sm font-black rounded-xl shadow-md shadow-amber-200 dark:shadow-none flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
                   <Check className="w-4 h-4" />
-                  <span>{editingHoliday ? 'حفظ تعديل الخصم' : 'تأكيد إضافة المناسبة وتفعيلها'}</span>
+                  <span>{editingHoliday ? 'حفظ تعديل الخصم' : 'تأكيد وحفظ المناسبة'}</span>
                 </button>
               </div>
             </form>
@@ -248,7 +251,7 @@ export const HolidaysDiscountsModal: React.FC<HolidaysDiscountsModalProps> = ({
         </div>
 
         {/* Holidays Grid */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="p-3.5 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {holidays.map((h) => (
             <div
               key={h.id}
@@ -329,10 +332,12 @@ export const HolidaysDiscountsModal: React.FC<HolidaysDiscountsModalProps> = ({
           ))}
         </div>
 
+        </div>
+
         {/* Footer */}
-        <div className="p-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-            Retaj Today • عروض وخصومات مركز رتاج الطبي بدولة الإمارات العربية المتحدة
+        <div className="p-3 sm:p-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
+          <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate max-w-[200px] sm:max-w-none">
+            Retaj Today • عروض وخصومات مركز رتاج الطبي (الإمارات)
           </p>
           <button
             onClick={onClose}

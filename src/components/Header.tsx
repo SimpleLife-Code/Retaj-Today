@@ -130,7 +130,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Time & Employee Info & Actions */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 justify-end">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-3 justify-between sm:justify-end">
             
             {/* Live Clock & Date */}
             <div className="hidden lg:flex flex-col items-end px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300">
@@ -144,73 +144,75 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
-            {/* Employee Profile Pill: وعد السيد - مدير قسم التسويق */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-slate-800 dark:to-slate-800/80 border border-sky-200 dark:border-slate-700 rounded-xl shadow-xs">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-600 to-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+            {/* Employee Profile Pill */}
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-slate-800 dark:to-slate-800/80 border border-sky-200 dark:border-slate-700 rounded-xl shadow-xs">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-tr from-sky-600 to-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
                 و
               </div>
               <div className="text-right">
-                <p className="text-xs font-black text-slate-900 dark:text-white leading-none">وعد السيد</p>
-                <p className="text-[10px] text-sky-700 dark:text-sky-300 font-bold truncate max-w-[130px]">
+                <p className="text-[11px] sm:text-xs font-black text-slate-900 dark:text-white leading-none">وعد السيد</p>
+                <p className="text-[9px] sm:text-[10px] text-sky-700 dark:text-sky-300 font-bold truncate max-w-[100px] sm:max-w-[130px]">
                   {currentUserEmail ? currentUserEmail.split('@')[0] : 'مدير قسم التسويق'}
                 </p>
               </div>
             </div>
 
-            {/* Dark Mode Toggle Button */}
-            <button
-              onClick={onToggleDarkMode}
-              className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center"
-              title={isDarkMode ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي'}
-            >
-              {isDarkMode ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-slate-700" />
-              )}
-            </button>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {/* Dark Mode Toggle Button */}
+              <button
+                onClick={onToggleDarkMode}
+                className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center cursor-pointer"
+                title={isDarkMode ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي'}
+              >
+                {isDarkMode ? (
+                  <Sun className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-slate-700" />
+                )}
+              </button>
 
-            {/* Direct PWA Install Button */}
-            <PWAInstallButton variant="header" />
+              {/* Direct PWA Install Button */}
+              <PWAInstallButton variant="header" />
 
-            {/* Re-Exam Notifications Alert Bell (الأمر الهام) */}
-            <button
-              onClick={onOpenReExamAlerts}
-              className={`relative p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
-                totalAlerts > 0
-                  ? 'bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border-red-300 dark:border-red-800 hover:bg-red-100 shadow-sm'
-                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
-              }`}
-              title="إشعارات مواعيد إعادة الكشف"
-            >
-              <Bell className={`w-5 h-5 ${totalAlerts > 0 ? 'animate-bounce text-red-600 dark:text-red-400' : ''}`} />
-              <span className="text-xs font-bold hidden sm:inline">
-                مواعيد الإعادة
-              </span>
-              {totalAlerts > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[11px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-pulse">
-                  {totalAlerts}
+              {/* Re-Exam Notifications Alert Bell */}
+              <button
+                onClick={onOpenReExamAlerts}
+                className={`relative p-2 sm:p-2.5 rounded-xl border transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer ${
+                  totalAlerts > 0
+                    ? 'bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border-red-300 dark:border-red-800 hover:bg-red-100 shadow-sm'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+                title="إشعارات مواعيد إعادة الكشف"
+              >
+                <Bell className={`w-4 h-4 sm:w-5 sm:h-5 ${totalAlerts > 0 ? 'animate-bounce text-red-600 dark:text-red-400' : ''}`} />
+                <span className="text-xs font-bold hidden md:inline">
+                  مواعيد الإعادة
                 </span>
-              )}
-            </button>
+                {totalAlerts > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[10px] sm:text-[11px] font-extrabold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-md animate-pulse">
+                    {totalAlerts}
+                  </span>
+                )}
+              </button>
 
-            {/* New Examination Primary Action */}
-            <button
-              onClick={onOpenNewExam}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 active:scale-95 text-white text-xs sm:text-sm font-bold shadow-md shadow-sky-200 dark:shadow-none transition-all"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>تسجيل كشف جديد</span>
-            </button>
+              {/* New Examination Primary Action */}
+              <button
+                onClick={onOpenNewExam}
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 active:scale-95 text-white text-xs sm:text-sm font-bold shadow-md shadow-sky-200 dark:shadow-none transition-all cursor-pointer whitespace-nowrap"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>كشف جديد</span>
+              </button>
 
-            {/* Logout Button */}
-            <button
-              onClick={() => setIsLogoutConfirmOpen(true)}
-              className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
-              title="تسجيل الخروج من المنصة"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+              {/* Logout Button */}
+              <button
+                onClick={() => setIsLogoutConfirmOpen(true)}
+                className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors cursor-pointer"
+                title="تسجيل الخروج من المنصة"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
