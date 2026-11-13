@@ -52,7 +52,7 @@ export interface Examination {
   paidAmount: number;
   remainingAmount: number;
   paymentStatus: PaymentStatus;
-  paymentMethod: 'نقداً' | 'فيزا / بطاقة' | 'فودافون كاش / إنستاباي' | 'تأمين طبي';
+  paymentMethod: 'نقداً' | 'فيزا / بطاقة' | 'تحويل بنكي' | 'فودافون كاش / إنستاباي' | 'تأمين طبي';
   diagnosis?: string;
   prescription?: string;
   notes?: string;
@@ -63,6 +63,8 @@ export interface Examination {
   followUpNotes?: string;
   employeeName: string;
 }
+
+export type ActiveTab = 'control-panel' | 'organizer' | 'patients' | 'examinations' | 'clinics' | 'holidays';
 
 export interface HolidayDiscount {
   id: string;

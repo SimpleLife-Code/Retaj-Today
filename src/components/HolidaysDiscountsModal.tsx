@@ -35,8 +35,6 @@ export const HolidaysDiscountsModal: React.FC<HolidaysDiscountsModalProps> = ({
   onUpdateHoliday,
   onDeleteHoliday
 }) => {
-  if (!isOpen) return null;
-
   const [isAdding, setIsAdding] = useState(false);
   const [editingHoliday, setEditingHoliday] = useState<HolidayDiscount | null>(null);
   const [holidayToDelete, setHolidayToDelete] = useState<HolidayDiscount | null>(null);
@@ -95,6 +93,8 @@ export const HolidaysDiscountsModal: React.FC<HolidaysDiscountsModalProps> = ({
 
     resetForm();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">

@@ -30,8 +30,6 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
   onSaveClinic,
   onDeleteClinic
 }) => {
-  if (!isOpen) return null;
-
   const [isAdding, setIsAdding] = useState(false);
   const [editingClinicId, setEditingClinicId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -125,6 +123,8 @@ export const ClinicManagementModal: React.FC<ClinicManagementModalProps> = ({
       setTimeout(() => setFeedback(null), 3500);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
