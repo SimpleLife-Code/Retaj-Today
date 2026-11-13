@@ -36,9 +36,7 @@ export const ReExamAlertsModal: React.FC<ReExamAlertsModalProps> = ({
   onRescheduleFollowUp,
   onSelectPatient
 }) => {
-  if (!isOpen) return null;
-
-  const todayStr = '2026-10-22'; // Current base date
+  const todayStr = new Date().toLocaleDateString('en-CA');
 
   const [activeTab, setActiveTab] = useState<'today' | 'overdue' | 'upcoming' | 'all'>('today');
   const [selectedClinic, setSelectedClinic] = useState<string>('all');
@@ -90,7 +88,7 @@ export const ReExamAlertsModal: React.FC<ReExamAlertsModalProps> = ({
         if (perm === 'granted') {
           new Notification('Retaj Today', {
             body: `تم تفعيل إشعارات إعادة الكشف! لديك ${dueToday.length} حالات إعادة مستحقة اليوم.`,
-            icon: '/logo.png'
+            icon: './logo.png'
           });
         }
       } catch (err) {
@@ -125,6 +123,8 @@ export const ReExamAlertsModal: React.FC<ReExamAlertsModalProps> = ({
     onRescheduleFollowUp(examId, newDateInput, newNotesInput);
     setEditingExamId(null);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">

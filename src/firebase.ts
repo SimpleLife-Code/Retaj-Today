@@ -3,8 +3,12 @@ import {
   getAuth, 
   GoogleAuthProvider, 
   signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult, 
+  setPersistence, 
+  browserLocalPersistence, 
+  browserSessionPersistence, 
   signOut, 
-  onAuthStateChanged,
   User 
 } from 'firebase/auth';
 import { 
@@ -12,19 +16,36 @@ import {
   collection, 
   doc, 
   setDoc, 
-  getDocs, 
   deleteDoc, 
-  onSnapshot 
+  getDocFromServer 
 } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 import { Patient, Clinic, Examination, HolidayDiscount } from './types';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const db = (!firebaseConfig.firestoreDatabaseId || firebaseConfig.firestoreDatabaseId === '(default)')
-  ? getFirestore(app)
-  : getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db =
+  !firebaseConfig.firestoreDatabaseId || firebaseConfig.firestoreDatabaseId === '(default)'
+    ? getFirestore(app)
+    : getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
+
+// Ensure auth persistence gracefully adapts to mobile Safari / private browsing
+setPersistence(auth, browserLocalPersistence).catch(() => {
+  setPersistence(auth, browserSessionPersistence).catch(() => {});
+});
+
+// Validate Connection to Firestore on boot
+export async function testFirestoreConnection() {
+  try {
+    await getDocFromServer(doc(db, 'test', 'connection'));
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.error('Please check your Firebase configuration.');
+    }
+  }
+}
+testFirestoreConnection();
 
 // Google Auth Provider (Gmail Login Only)
 export const googleProvider = new GoogleAuthProvider();
@@ -46,9 +67,37 @@ export const isEmailAllowed = (email: string | null | undefined): boolean => {
   return ALLOWED_EMAILS.includes(email.toLowerCase().trim());
 };
 
-export const signInWithGoogle = async () => {
-  const result = await signInWithPopup(auth, googleProvider);
-  return result.user;
+export const signInWithGoogle = async (): Promise<User | null> => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result.user;
+  } catch (err: any) {
+    // On mobile browsers where popups are blocked or unsupported, fall back cleanly to redirect
+    const code = err?.code || '';
+    if (
+      code === 'auth/popup-blocked' ||
+      code === 'auth/operation-not-supported-in-this-environment' ||
+      code === 'auth/web-storage-unsupported'
+    ) {
+      await signInWithRedirect(auth, googleProvider);
+      return null;
+    }
+    throw err;
+  }
+};
+
+export const signInWithGoogleRedirect = async () => {
+  await signInWithRedirect(auth, googleProvider);
+};
+
+export const checkGoogleRedirectResult = async (): Promise<User | null> => {
+  try {
+    const result = await getRedirectResult(auth);
+    return result?.user || null;
+  } catch (err) {
+    console.warn('Redirect sign-in check notice:', err);
+    return null;
+  }
 };
 
 export const logoutUser = async () => {
@@ -61,7 +110,7 @@ export enum OperationType {
   DELETE = 'delete',
   LIST = 'list',
   GET = 'get',
-  WRITE = 'write',
+  WRITE = 'write'
 }
 
 export interface FirestoreErrorInfo {
@@ -71,15 +120,21 @@ export interface FirestoreErrorInfo {
   authInfo: {
     userId?: string | null;
     email?: string | null;
+    emailVerified?: boolean | null;
   };
 }
 
-export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+export function handleFirestoreError(
+  error: unknown,
+  operationType: OperationType,
+  path: string | null
+) {
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
       userId: auth.currentUser?.uid,
       email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified
     },
     operationType,
     path

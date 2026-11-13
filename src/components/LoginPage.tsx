@@ -1,30 +1,34 @@
 import React, { useState } from 'react';
 import { 
-  ShieldCheck, 
   AlertCircle, 
   Lock, 
-  Sparkles, 
-  CheckCircle2, 
-  ArrowLeft,
-  Sun,
-  Moon
+  Sun, 
+  Moon, 
+  Smartphone 
 } from 'lucide-react';
-import { signInWithGoogle, logoutUser, isEmailAllowed } from '../firebase';
+import { 
+  signInWithGoogle, 
+  signInWithGoogleRedirect, 
+  logoutUser, 
+  isEmailAllowed 
+} from '../firebase';
 import { BrandLogo } from './BrandLogo';
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
+  initialDeniedEmail?: string | null;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({
   onLoginSuccess,
   isDarkMode,
-  onToggleDarkMode
+  onToggleDarkMode,
+  initialDeniedEmail = null
 }) => {
   const [loading, setLoading] = useState(false);
-  const [deniedEmail, setDeniedEmail] = useState<string | null>(null);
+  const [deniedEmail, setDeniedEmail] = useState<string | null>(initialDeniedEmail);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleGoogleSignIn = async () => {
@@ -34,28 +38,55 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
     try {
       const user = await signInWithGoogle();
+      if (!user) {
+        // Redirect fallback initiated for mobile
+        return;
+      }
       const email = user.email?.toLowerCase().trim();
 
       if (isEmailAllowed(email)) {
         onLoginSuccess();
       } else {
-        // Unauthorized email -> immediately sign out and reject
         await logoutUser();
         setDeniedEmail(email || 'غير معروف');
       }
     } catch (err: any) {
-      if (err.code !== 'auth/popup-closed-by-user') {
+      const code = err?.code || '';
+      if (code !== 'auth/popup-closed-by-user') {
         console.error('Login error:', err);
-        setErrorMessage('حدث خطأ أثناء الاتصال بخدمة تسجيل الدخول بجوجل، يرجى المحاولة مرة أخرى.');
+        if (code === 'auth/unauthorized-domain') {
+          setErrorMessage(
+            'نطاق الموقع الحالي غير مضاف في إعدادات Firebase Auth، يرجى فتح الرابط من النطاق المعتمد أو إضافته.'
+          );
+        } else {
+          setErrorMessage(
+            'تعذر فتح النافذة المنبثقة على هذا المتصفح. يمكنك استخدام زر "تسجيل الدخول المباشر للهاتف" أدناه.'
+          );
+        }
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleRedirectSignIn = async () => {
+    setLoading(true);
+    setDeniedEmail(null);
+    setErrorMessage(null);
+    try {
+      await signInWithGoogleRedirect();
+    } catch (err) {
+      console.error('Redirect login error:', err);
+      setErrorMessage('تعذر تحويل صفحة تسجيل الدخول، يرجى التأكد من الاتصال بالإنترنت أو فتح الرابط في متصفح Chrome / Safari.');
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-slate-50 via-sky-50/40 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex flex-col justify-between p-4 sm:p-6 transition-colors duration-200" dir="rtl">
-      
+    <div
+      className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-slate-50 via-sky-50/40 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex flex-col justify-between p-4 sm:p-6 transition-colors duration-200"
+      dir="rtl"
+    >
       {/* Top Bar with Dark Mode Toggle */}
       <div className="max-w-6xl w-full mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -66,7 +97,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
         <button
           onClick={onToggleDarkMode}
-          className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-xs"
+          className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-xs cursor-pointer"
           title={isDarkMode ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي'}
         >
           {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -76,23 +107,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       {/* Main Login Card */}
       <div className="max-w-md w-full mx-auto my-auto">
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6 relative overflow-hidden text-center">
-          
-          {/* Subtle decorative background gradient */}
           <div className="absolute top-0 right-0 w-40 h-40 bg-sky-500/10 rounded-full blur-2xl pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 w-40 h-40 bg-red-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
           {/* Logo as Steady Hero Icon */}
           <div className="relative mx-auto w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
-            {/* Soft decorative ring */}
             <div className="absolute inset-0 rounded-2xl bg-sky-500/10 dark:bg-sky-400/10 border border-sky-400/20 pointer-events-none"></div>
-            
-            {/* Central Logo */}
             <div className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-xl bg-white dark:bg-slate-800 p-2 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center overflow-hidden">
               <BrandLogo className="w-full h-full object-contain" />
             </div>
           </div>
 
-          {/* App Titles: Retaj Today | ريتاج اليوم */}
+          {/* App Titles */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-sans tracking-tight">
@@ -110,7 +136,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
           {/* Unauthorized Email Alert Banner */}
           {deniedEmail && (
-            <div className="p-4 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900/60 rounded-2xl text-right space-y-1.5 animate-in fade-in slide-in-from-top-2">
+            <div className="p-4 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900/60 rounded-2xl text-right space-y-1.5 animate-in fade-in">
               <div className="flex items-center gap-2 text-red-700 dark:text-red-400 font-extrabold text-xs">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>عذراً، هذا الحساب غير مصرح له بالدخول</span>
@@ -126,7 +152,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
           {/* Error Message */}
           {errorMessage && (
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-900/60 rounded-xl text-xs text-amber-800 dark:text-amber-300 text-center font-bold">
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-900/60 rounded-xl text-xs text-amber-800 dark:text-amber-300 text-center font-bold leading-relaxed">
               {errorMessage}
             </div>
           )}
@@ -136,7 +162,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             <button
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-full py-3.5 px-4 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-white font-extrabold text-sm border-2 border-slate-200 dark:border-slate-700 shadow-md hover:shadow-lg active:scale-[0.99] transition-all flex items-center justify-center gap-3 disabled:opacity-60 cursor-pointer"
+              className="w-full py-3.5 px-4 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-extrabold text-sm border-2 border-slate-200 dark:border-slate-700 shadow-md hover:shadow-lg active:scale-[0.99] transition-all flex items-center justify-center gap-3 disabled:opacity-60 cursor-pointer"
             >
               {loading ? (
                 <div className="flex items-center gap-2 text-sky-600 dark:text-sky-400">
@@ -145,7 +171,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </div>
               ) : (
                 <>
-                  {/* Google "G" Logo Icon */}
                   <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
@@ -169,12 +194,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               )}
             </button>
 
+            <button
+              type="button"
+              onClick={handleRedirectSignIn}
+              disabled={loading}
+              className="w-full py-2.5 px-4 rounded-xl bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-60"
+            >
+              <Smartphone className="w-4 h-4 shrink-0" />
+              <span>دخول مباشر للهاتف (بدون نافذة منبثقة)</span>
+            </button>
+
             <div className="flex items-center gap-2 justify-center text-[11px] text-slate-400 dark:text-slate-500">
               <Lock className="w-3.5 h-3.5" />
               <span>تسجيل دخول آمن ومباشر بحساب جيميل المعتمد</span>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -182,7 +216,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       <div className="text-center text-xs text-slate-400 dark:text-slate-500 py-3">
         Retaj Today • ريتاج اليوم • مركز رتاج الطبي بدولة الإمارات العربية المتحدة 🇦🇪
       </div>
-
     </div>
   );
 };

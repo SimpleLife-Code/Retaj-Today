@@ -44,12 +44,11 @@ export const DataBackupModal: React.FC<DataBackupModalProps> = ({
   onSyncAllToFirebase,
   isFirebaseConnected
 }) => {
-  if (!isOpen) return null;
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   // Export JSON (Records technique)
   const handleExportJSON = () => {
@@ -175,6 +174,8 @@ export const DataBackupModal: React.FC<DataBackupModalProps> = ({
       }, 4000);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
@@ -363,21 +364,38 @@ export const DataBackupModal: React.FC<DataBackupModalProps> = ({
           </div>
 
           {/* Reset To Sample Data */}
-          <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs">
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2 text-xs">
             <span className="text-slate-500 dark:text-slate-400 font-medium">تصفير السجلات وإعادة الضبط:</span>
-            <button
-              onClick={() => {
-                if (confirm('هل ترغب في تصفير السجلات وإعادة ضبط عيادات وأعياد الإمارات؟')) {
-                  onResetToDefaults();
-                  setSuccessMsg('تم تصفير البيانات بنجاح.');
-                  setTimeout(() => setSuccessMsg(null), 3000);
-                }
-              }}
-              className="px-3 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/60 rounded-lg font-bold flex items-center gap-1 transition-colors"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>تصفير البيانات</span>
-            </button>
+            {!confirmReset ? (
+              <button
+                onClick={() => setConfirmReset(true)}
+                className="px-3 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/60 rounded-lg font-bold flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>تصفير البيانات</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-red-600 dark:text-red-400 font-bold">تأكيد التصفير؟</span>
+                <button
+                  onClick={() => {
+                    onResetToDefaults();
+                    setConfirmReset(false);
+                    setSuccessMsg('تم تصفير البيانات بنجاح.');
+                    setTimeout(() => setSuccessMsg(null), 3000);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-red-600 text-white font-bold cursor-pointer"
+                >
+                  نعم
+                </button>
+                <button
+                  onClick={() => setConfirmReset(false)}
+                  className="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold cursor-pointer"
+                >
+                  إلغاء
+                </button>
+              </div>
+            )}
           </div>
 
         </div>

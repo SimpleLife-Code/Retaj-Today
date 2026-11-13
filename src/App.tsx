@@ -33,7 +33,8 @@ import {
   handleFirestoreError,
   OperationType,
   isEmailAllowed,
-  logoutUser
+  logoutUser,
+  checkGoogleRedirectResult
 } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { onSnapshot } from 'firebase/firestore';
@@ -78,13 +79,31 @@ export default function App() {
     setIsDarkMode((prev) => !prev);
   };
 
-  // Listen to Firebase Auth state
+  const [deniedEmail, setDeniedEmail] = useState<string | null>(null);
+
+  // Listen to Firebase Auth state & handle mobile redirect sign-in result
   useEffect(() => {
+    let mounted = true;
+    const safetyTimer = setTimeout(() => {
+      if (mounted) setAuthLoading(false);
+    }, 5000);
+
+    checkGoogleRedirectResult().then(async (redirectUser) => {
+      if (!mounted || !redirectUser) return;
+      if (!isEmailAllowed(redirectUser.email)) {
+        setDeniedEmail(redirectUser.email || 'غير معروف');
+        await logoutUser();
+      }
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!mounted) return;
+      clearTimeout(safetyTimer);
       if (user && isEmailAllowed(user.email)) {
+        setDeniedEmail(null);
         setCurrentUser(user);
       } else if (user && !isEmailAllowed(user.email)) {
-        // User logged in with unauthorized email -> logout
+        setDeniedEmail(user.email || 'غير معروف');
         await logoutUser();
         setCurrentUser(null);
       } else {
@@ -93,7 +112,11 @@ export default function App() {
       setAuthLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      mounted = false;
+      clearTimeout(safetyTimer);
+      unsubscribe();
+    };
   }, []);
 
   // State: Zeroed out dummy data for patients & examinations as requested
@@ -720,6 +743,7 @@ export default function App() {
         onLoginSuccess={() => {}}
         isDarkMode={isDarkMode}
         onToggleDarkMode={toggleDarkMode}
+        initialDeniedEmail={deniedEmail}
       />
     );
   }
