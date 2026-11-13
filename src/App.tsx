@@ -6,6 +6,8 @@ import { PatientsTable } from './components/PatientsTable';
 import { NewExaminationModal } from './components/NewExaminationModal';
 import { ReExamAlertsModal } from './components/ReExamAlertsModal';
 import { PatientFileModal } from './components/PatientFileModal';
+import { PatientFormModal } from './components/PatientFormModal';
+import { ControlPanel } from './components/ControlPanel';
 import { ClinicManagementModal } from './components/ClinicManagementModal';
 import { HolidaysDiscountsModal } from './components/HolidaysDiscountsModal';
 import { PrintReceiptModal } from './components/PrintReceiptModal';
@@ -20,7 +22,7 @@ import {
   INITIAL_PATIENTS, 
   INITIAL_EXAMINATIONS 
 } from './data/seedData';
-import { Patient, Clinic, Examination, HolidayDiscount } from './types';
+import { Patient, Clinic, Examination, HolidayDiscount, ActiveTab } from './types';
 import { 
   auth,
   firestoreService, 
@@ -36,15 +38,11 @@ import {
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { onSnapshot } from 'firebase/firestore';
 import { 
-  Heart, 
-  Building2, 
-  Sparkles, 
-  Calendar, 
-  ShieldCheck, 
-  PhoneCall, 
   Plus, 
-  Clock,
-  CloudCheck
+  CheckCircle2, 
+  Edit2, 
+  Trash2, 
+  Power 
 } from 'lucide-react';
 
 export default function App() {
@@ -302,12 +300,23 @@ export default function App() {
   };
 
   // UI state
-  const [activeTab, setActiveTab] = useState<'organizer' | 'patients' | 'examinations' | 'clinics' | 'holidays'>('organizer');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('organizer');
   const [searchQuery, setSearchQuery] = useState('');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage((prev) => (prev === msg ? null : prev));
+    }, 3500);
+  };
 
   // Modals state
   const [isNewExamOpen, setIsNewExamOpen] = useState(false);
+  const [examToEdit, setExamToEdit] = useState<Examination | null>(null);
   const [defaultPatientIdForExam, setDefaultPatientIdForExam] = useState<string | undefined>(undefined);
+  const [isPatientFormOpen, setIsPatientFormOpen] = useState(false);
+  const [patientToEdit, setPatientToEdit] = useState<Patient | null>(null);
   const [isReExamAlertsOpen, setIsReExamAlertsOpen] = useState(false);
   const [isClinicsModalOpen, setIsClinicsModalOpen] = useState(false);
   const [isHolidaysModalOpen, setIsHolidaysModalOpen] = useState(false);
@@ -320,10 +329,14 @@ export default function App() {
   const closeTopModalOrGoBack = () => {
     if (isPrintReceiptOpen) {
       setIsPrintReceiptOpen(false);
-    } else if (selectedPatientFile) {
-      setSelectedPatientFile(null);
+    } else if (isPatientFormOpen) {
+      setIsPatientFormOpen(false);
+      setPatientToEdit(null);
     } else if (isNewExamOpen) {
       setIsNewExamOpen(false);
+      setExamToEdit(null);
+    } else if (selectedPatientFile) {
+      setSelectedPatientFile(null);
     } else if (isReExamAlertsOpen) {
       setIsReExamAlertsOpen(false);
     } else if (isClinicsModalOpen) {
@@ -365,6 +378,7 @@ export default function App() {
     };
   }, [
     isPrintReceiptOpen,
+    isPatientFormOpen,
     selectedPatientFile,
     isNewExamOpen,
     isReExamAlertsOpen,
@@ -393,8 +407,28 @@ export default function App() {
   // Handlers with direct Firebase saving
   const handleOpenNewExam = (patientId?: string) => {
     pushModalHistory();
+    setExamToEdit(null);
     setDefaultPatientIdForExam(patientId);
     setIsNewExamOpen(true);
+  };
+
+  const handleOpenEditExam = (exam: Examination) => {
+    pushModalHistory();
+    setExamToEdit(exam);
+    setDefaultPatientIdForExam(exam.patientId);
+    setIsNewExamOpen(true);
+  };
+
+  const handleOpenAddPatient = () => {
+    pushModalHistory();
+    setPatientToEdit(null);
+    setIsPatientFormOpen(true);
+  };
+
+  const handleOpenEditPatient = (patient: Patient) => {
+    pushModalHistory();
+    setPatientToEdit(patient);
+    setIsPatientFormOpen(true);
   };
 
   const handleSelectPatient = (patientId: string) => {
@@ -439,11 +473,47 @@ export default function App() {
     setExaminations((prev) => [exam, ...prev]);
     // Save directly to Firebase
     firestoreService.saveExamination(exam).catch(console.error);
+    showToast(`تم تسجيل الكشف (${exam.receiptNumber}) وحفظه بنجاح`);
 
     if (printImmediately) {
       setCurrentPrintExam(exam);
       setIsPrintReceiptOpen(true);
     }
+  };
+
+  const handleUpdateExam = async (updatedExam: Examination, printImmediately?: boolean) => {
+    setExaminations((prev) =>
+      prev.map((e) => (e.id === updatedExam.id ? updatedExam : e))
+    );
+    firestoreService.saveExamination(updatedExam).catch(console.error);
+    showToast(`تم تحديث بيانات الكشف (${updatedExam.receiptNumber}) بنجاح`);
+
+    if (printImmediately) {
+      setCurrentPrintExam(updatedExam);
+      setIsPrintReceiptOpen(true);
+    }
+  };
+
+  const handleDeleteExam = async (examId: string) => {
+    setExaminations((prev) => prev.filter((e) => e.id !== examId));
+    try {
+      await firestoreService.deleteExamination(examId);
+      showToast('تم حذف الكشف نهائياً من السجل وقاعدة البيانات');
+    } catch (err) {
+      console.error('Error deleting examination from Firestore:', err);
+    }
+  };
+
+  const handleSettleExamBalance = (exam: Examination) => {
+    const updated: Examination = {
+      ...exam,
+      paidAmount: exam.finalFee,
+      remainingAmount: 0,
+      paymentStatus: exam.finalFee === 0 ? 'مجاني (إعادة كشف)' : 'مدفوع بالكامل'
+    };
+    setExaminations((prev) => prev.map((e) => (e.id === exam.id ? updated : e)));
+    firestoreService.saveExamination(updated).catch(console.error);
+    showToast(`تم تحصيل المبلغ المتبقي لكشف (${exam.patientName}) بنجاح`);
   };
 
   const handleMarkFollowUpComplete = (examId: string) => {
@@ -542,12 +612,72 @@ export default function App() {
     firestoreService.deleteHoliday(holidayId).catch(console.error);
   };
 
+  const handleToggleClinicActive = async (clinic: Clinic) => {
+    const updated = { ...clinic, active: !clinic.active };
+    await handleSaveClinic(updated);
+    showToast(updated.active ? `تم تفعيل ${updated.name}` : `تم إيقاف ${updated.name}`);
+  };
+
   const handleUpdatePatient = (updatedPatient: Patient) => {
     setPatients((prev) =>
       prev.map((p) => (p.id === updatedPatient.id ? updatedPatient : p))
     );
-    setSelectedPatientFile(updatedPatient);
+    setSelectedPatientFile((prev) =>
+      prev && prev.id === updatedPatient.id ? updatedPatient : prev
+    );
     firestoreService.savePatient(updatedPatient).catch(console.error);
+
+    // Sync updated name & phone to linked examinations
+    setExaminations((prev) =>
+      prev.map((e) => {
+        if (
+          e.patientId === updatedPatient.id &&
+          (e.patientName !== updatedPatient.fullName || e.patientPhone !== updatedPatient.phone)
+        ) {
+          const syncedExam = {
+            ...e,
+            patientName: updatedPatient.fullName,
+            patientPhone: updatedPatient.phone
+          };
+          firestoreService.saveExamination(syncedExam).catch(console.error);
+          return syncedExam;
+        }
+        return e;
+      })
+    );
+    showToast(`تم تحديث بيانات المريض (${updatedPatient.fullName}) بنجاح`);
+  };
+
+  const handleSavePatientFromForm = async (patientData: Patient, isEdit: boolean) => {
+    if (isEdit) {
+      handleUpdatePatient(patientData);
+    } else {
+      setPatients((prev) => [patientData, ...prev]);
+      await firestoreService.savePatient(patientData).catch(console.error);
+      showToast(`تم تسجيل المريض الجديد (${patientData.fullName}) بنجاح`);
+    }
+  };
+
+  const handleDeletePatient = async (patientId: string, deleteRelatedExams = true) => {
+    const target = patients.find((p) => p.id === patientId);
+    setPatients((prev) => prev.filter((p) => p.id !== patientId));
+    if (selectedPatientFile?.id === patientId) {
+      setSelectedPatientFile(null);
+    }
+
+    try {
+      await firestoreService.deletePatient(patientId);
+      if (deleteRelatedExams) {
+        const linked = examinations.filter((e) => e.patientId === patientId);
+        setExaminations((prev) => prev.filter((e) => e.patientId !== patientId));
+        for (const exam of linked) {
+          await firestoreService.deleteExamination(exam.id).catch(console.error);
+        }
+      }
+      showToast(`تم حذف ملف المريض (${target?.fullName || ''}) نهائياً`);
+    } catch (err) {
+      console.error('Error deleting patient from Firestore:', err);
+    }
   };
 
   const handleRestoreData = (backup: {
@@ -617,10 +747,46 @@ export default function App() {
         onLogout={handleLogout}
       />
 
+      {/* Toast Feedback Banner */}
+      {toastMessage && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[90] px-4 py-2.5 rounded-2xl bg-emerald-600 text-white text-xs sm:text-sm font-bold shadow-xl flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
         
         {/* Active Tab View */}
+        {activeTab === 'control-panel' && (
+          <ControlPanel
+            patients={patients}
+            examinations={examinations}
+            clinics={clinics}
+            holidays={holidays}
+            globalSearchQuery={searchQuery}
+            onOpenAddPatient={handleOpenAddPatient}
+            onEditPatient={handleOpenEditPatient}
+            onDeletePatient={handleDeletePatient}
+            onSelectPatient={handleSelectPatient}
+            onOpenNewExam={handleOpenNewExam}
+            onEditExam={handleOpenEditExam}
+            onDeleteExam={handleDeleteExam}
+            onPrintExam={handlePrintExam}
+            onMarkFollowUpComplete={handleMarkFollowUpComplete}
+            onSettleExamBalance={handleSettleExamBalance}
+            onOpenClinicsModal={() => { pushModalHistory(); setIsClinicsModalOpen(true); }}
+            onToggleClinicActive={handleToggleClinicActive}
+            onDeleteClinic={handleDeleteClinic}
+            onOpenHolidaysModal={() => { pushModalHistory(); setIsHolidaysModalOpen(true); }}
+            onToggleHoliday={handleToggleHoliday}
+            onDeleteHoliday={handleDeleteHoliday}
+            onOpenReExamAlerts={() => { pushModalHistory(); setIsReExamAlertsOpen(true); }}
+            onOpenDataBackup={() => { pushModalHistory(); setIsDataBackupOpen(true); }}
+          />
+        )}
+
         {activeTab === 'organizer' && (
           <TimeOrganizer
             examinations={examinations}
@@ -633,6 +799,8 @@ export default function App() {
             onOpenReExamAlerts={() => { pushModalHistory(); setIsReExamAlertsOpen(true); }}
             onOpenHolidays={() => { pushModalHistory(); setIsHolidaysModalOpen(true); }}
             onMarkFollowUpComplete={handleMarkFollowUpComplete}
+            onEditExam={handleOpenEditExam}
+            onDeleteExam={handleDeleteExam}
           />
         )}
 
@@ -645,6 +813,8 @@ export default function App() {
             onSelectPatient={handleSelectPatient}
             onPrintExam={handlePrintExam}
             onMarkFollowUpComplete={handleMarkFollowUpComplete}
+            onEditExam={handleOpenEditExam}
+            onDeleteExam={handleDeleteExam}
           />
         )}
 
@@ -655,6 +825,9 @@ export default function App() {
             searchQuery={searchQuery}
             onOpenNewExamForPatient={handleOpenNewExam}
             onSelectPatient={handleSelectPatient}
+            onOpenAddPatient={handleOpenAddPatient}
+            onEditPatient={handleOpenEditPatient}
+            onDeletePatient={handleDeletePatient}
           />
         )}
 
@@ -813,13 +986,29 @@ export default function App() {
       {/* MODALS */}
       <NewExaminationModal
         isOpen={isNewExamOpen}
-        onClose={() => setIsNewExamOpen(false)}
+        onClose={() => {
+          setIsNewExamOpen(false);
+          setExamToEdit(null);
+        }}
         patients={patients}
-        clinics={clinics.filter((c) => c.active)}
-        holidays={holidays.filter((h) => h.isActive)}
+        clinics={examToEdit ? clinics : clinics.filter((c) => c.active)}
+        holidays={examToEdit ? holidays : holidays.filter((h) => h.isActive)}
         onSaveExam={handleSaveExam}
+        onUpdateExam={handleUpdateExam}
         onOpenNewClinic={() => setIsClinicsModalOpen(true)}
         defaultPatientId={defaultPatientIdForExam}
+        examToEdit={examToEdit}
+      />
+
+      <PatientFormModal
+        isOpen={isPatientFormOpen}
+        onClose={() => {
+          setIsPatientFormOpen(false);
+          setPatientToEdit(null);
+        }}
+        patientToEdit={patientToEdit}
+        patientsCount={patients.length}
+        onSavePatient={handleSavePatientFromForm}
       />
 
       <ReExamAlertsModal
@@ -835,11 +1024,18 @@ export default function App() {
       <PatientFileModal
         isOpen={!!selectedPatientFile}
         onClose={() => setSelectedPatientFile(null)}
-        patient={selectedPatientFile}
+        patient={
+          selectedPatientFile
+            ? patients.find((p) => p.id === selectedPatientFile.id) || selectedPatientFile
+            : null
+        }
         examinations={examinations}
         onOpenNewExamForPatient={(patId) => handleOpenNewExam(patId)}
         onPrintExam={handlePrintExam}
         onUpdatePatient={handleUpdatePatient}
+        onDeletePatient={handleDeletePatient}
+        onEditExam={handleOpenEditExam}
+        onDeleteExam={handleDeleteExam}
       />
 
       <ClinicManagementModal

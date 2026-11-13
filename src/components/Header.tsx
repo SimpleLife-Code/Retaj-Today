@@ -13,11 +13,12 @@ import {
   Moon,
   Sun,
   LogOut,
-  ShieldCheck
+  ShieldCheck,
+  LayoutDashboard
 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { BrandLogo } from './BrandLogo';
-import { Examination } from '../types';
+import { Examination, ActiveTab } from '../types';
 
 interface HeaderProps {
   examinations: Examination[];
@@ -26,8 +27,8 @@ interface HeaderProps {
   onOpenClinics: () => void;
   onOpenHolidays: () => void;
   onOpenDataBackup: () => void;
-  activeTab: 'organizer' | 'patients' | 'examinations' | 'clinics' | 'holidays';
-  setActiveTab: (tab: 'organizer' | 'patients' | 'examinations' | 'clinics' | 'holidays') => void;
+  activeTab: ActiveTab;
+  setActiveTab: (tab: ActiveTab) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   isDarkMode: boolean;
@@ -222,8 +223,20 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Main Navigation Tabs */}
           <nav className="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
             <button
+              onClick={() => setActiveTab('control-panel')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'control-panel'
+                  ? 'bg-sky-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>لوحة التحكم</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('organizer')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'organizer'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'

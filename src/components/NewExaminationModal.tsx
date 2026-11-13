@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
-  X, 
-  User, 
-  Phone, 
   Stethoscope, 
-  Calendar, 
-  Clock, 
-  DollarSign, 
-  Tag, 
-  FileText, 
+  User, 
   AlertCircle, 
   Plus, 
   Check, 
-  Sparkles,
-  CreditCard,
-  Printer
+  Sparkles, 
+  Printer 
 } from 'lucide-react';
-import { Patient, Clinic, HolidayDiscount, Examination, ExaminationType, PaymentStatus } from '../types';
+import { 
+  Patient, 
+  Clinic, 
+  HolidayDiscount, 
+  Examination, 
+  ExaminationType, 
+  PaymentStatus, 
+  FollowUpStatus 
+} from '../types';
 
 interface NewExaminationModalProps {
   isOpen: boolean;
@@ -24,30 +24,46 @@ interface NewExaminationModalProps {
   patients: Patient[];
   clinics: Clinic[];
   holidays: HolidayDiscount[];
-  onSaveExam: (exam: Examination, isNewPatient: boolean, patientData?: Partial<Patient> | undefined, printImmediately?: boolean) => void;
+  onSaveExam: (
+    exam: Examination,
+    isNewPatient: boolean,
+    patientData?: Partial<Patient> | undefined,
+    printImmediately?: boolean
+  ) => void;
+  onUpdateExam?: (exam: Examination, printImmediately?: boolean) => void;
   onOpenNewClinic: () => void;
   defaultPatientId?: string;
+  examToEdit?: Examination | null;
 }
 
-export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
-  isOpen,
+export const NewExaminationModal: React.FC<NewExaminationModalProps> = (props) => {
+  if (!props.isOpen) return null;
+  return <NewExaminationModalContent {...props} />;
+};
+
+const NewExaminationModalContent: React.FC<NewExaminationModalProps> = ({
   onClose,
   patients,
   clinics,
   holidays,
   onSaveExam,
+  onUpdateExam,
   onOpenNewClinic,
-  defaultPatientId
+  defaultPatientId,
+  examToEdit
 }) => {
-  if (!isOpen) return null;
-
-  const todayStr = '2026-10-22';
+  const isEditMode = Boolean(examToEdit);
+  const todayStr = new Date().toLocaleDateString('en-CA');
   const now = new Date();
   const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-  const [isNewPatient, setIsNewPatient] = useState<boolean>(!defaultPatientId && patients.length === 0);
-  const [selectedPatientId, setSelectedPatientId] = useState<string>(defaultPatientId || (patients[0]?.id || ''));
-  
+  const [isNewPatient, setIsNewPatient] = useState<boolean>(
+    isEditMode ? false : !defaultPatientId && patients.length === 0
+  );
+  const [selectedPatientId, setSelectedPatientId] = useState<string>(
+    examToEdit?.patientId || defaultPatientId || patients[0]?.id || ''
+  );
+
   // New patient fields (UAE oriented)
   const [newPatientName, setNewPatientName] = useState<string>('');
   const [newPatientPhone, setNewPatientPhone] = useState<string>('');
@@ -58,35 +74,59 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
   const [newPatientMedicalHistory, setNewPatientMedicalHistory] = useState<string>('');
 
   // Clinic fields
-  const [selectedClinicId, setSelectedClinicId] = useState<string>(clinics[0]?.id || '');
-  
+  const [selectedClinicId, setSelectedClinicId] = useState<string>(
+    examToEdit?.clinicId || clinics[0]?.id || ''
+  );
+
   // Exam fields
-  const [examDate, setExamDate] = useState<string>(todayStr);
-  const [examTime, setExamTime] = useState<string>(currentTimeStr);
-  const [examType, setExamType] = useState<ExaminationType>('كشف أول');
-  const [baseFee, setBaseFee] = useState<number>(clinics[0]?.defaultFee || 300);
-  
+  const [examDate, setExamDate] = useState<string>(examToEdit?.date || todayStr);
+  const [examTime, setExamTime] = useState<string>(examToEdit?.time || currentTimeStr);
+  const [examType, setExamType] = useState<ExaminationType>(examToEdit?.examType || 'كشف أول');
+  const [baseFee, setBaseFee] = useState<number>(
+    examToEdit ? examToEdit.baseFee : (clinics[0]?.defaultFee || 300)
+  );
+
   // Discount fields
   const [selectedHolidayId, setSelectedHolidayId] = useState<string>('');
-  const [discountType, setDiscountType] = useState<'percentage' | 'fixed' | 'none'>('none');
-  const [discountValue, setDiscountValue] = useState<number>(0);
-  const [discountReason, setDiscountReason] = useState<string>('');
-  
-  // Payment
-  const [paidAmount, setPaidAmount] = useState<number>(baseFee);
-  const [paymentMethod, setPaymentMethod] = useState<'نقداً' | 'فيزا / بطاقة' | 'فودافون كاش / إنستاباي' | 'تأمين طبي'>('نقداً');
-  
-  // Clinical notes
-  const [diagnosis, setDiagnosis] = useState<string>('');
-  const [prescription, setPrescription] = useState<string>('');
-  const [generalNotes, setGeneralNotes] = useState<string>('');
-  
-  // Follow-up Re-Examination (الأمر الهام)
-  const [followUpDate, setFollowUpDate] = useState<string>('');
-  const [followUpNotes, setFollowUpNotes] = useState<string>('');
+  const [discountType, setDiscountType] = useState<'percentage' | 'fixed' | 'none'>(
+    examToEdit?.discountType || 'none'
+  );
+  const [discountValue, setDiscountValue] = useState<number>(examToEdit?.discountValue || 0);
+  const [discountReason, setDiscountReason] = useState<string>(examToEdit?.discountReason || '');
 
-  // When clinic changes, update default fee and calculate follow-up date
+  // Payment
+  const [paidAmount, setPaidAmount] = useState<number>(
+    examToEdit ? examToEdit.paidAmount : (clinics[0]?.defaultFee || 300)
+  );
+  const [paymentMethod, setPaymentMethod] = useState<Examination['paymentMethod']>(
+    examToEdit?.paymentMethod || 'نقداً'
+  );
+
+  // Clinical notes
+  const [diagnosis, setDiagnosis] = useState<string>(examToEdit?.diagnosis || '');
+  const [prescription, setPrescription] = useState<string>(examToEdit?.prescription || '');
+  const [generalNotes, setGeneralNotes] = useState<string>(examToEdit?.notes || '');
+
+  // Follow-up Re-Examination
+  const [followUpDate, setFollowUpDate] = useState<string>(examToEdit?.followUpDate || '');
+  const [followUpStatus, setFollowUpStatus] = useState<FollowUpStatus>(
+    examToEdit?.followUpStatus || 'pending'
+  );
+  const [followUpNotes, setFollowUpNotes] = useState<string>(examToEdit?.followUpNotes || '');
+
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Prevent auto-overwriting preloaded edit fields on initial mount
+  const isFirstRenderRef = useRef(true);
+  const skipPaidSyncRef = useRef(isEditMode);
+
+  // When clinic, date, or examType changes (for new exam OR user edits clinic/type in edit mode)
   useEffect(() => {
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      if (isEditMode) return;
+    }
+
     const clinic = clinics.find((c) => c.id === selectedClinicId);
     if (clinic) {
       if (examType !== 'إعادة كشف') {
@@ -95,16 +135,17 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
         setBaseFee(clinic.isFollowUpFree ? 0 : Math.round(clinic.defaultFee / 2));
       }
 
-      // Calculate follow-up date based on examDate + clinic.followUpDays
       try {
         const d = new Date(examDate);
-        d.setDate(d.getDate() + (clinic.followUpDays || 14));
-        setFollowUpDate(d.toISOString().split('T')[0]);
+        if (!Number.isNaN(d.getTime())) {
+          d.setDate(d.getDate() + (clinic.followUpDays || 14));
+          setFollowUpDate(d.toISOString().split('T')[0]);
+        }
       } catch {
-        setFollowUpDate('2026-11-05');
+        setFollowUpDate(examDate);
       }
     }
-  }, [selectedClinicId, examDate, examType, clinics]);
+  }, [selectedClinicId, examDate, examType, clinics, isEditMode]);
 
   // When holiday selected, apply holiday discount
   const handleSelectHoliday = (holidayId: string) => {
@@ -124,17 +165,21 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
   };
 
   // Calculate final fee
-  const calculatedDiscountAmount = 
-    discountType === 'percentage' 
-      ? Math.round((baseFee * discountValue) / 100) 
-      : discountType === 'fixed' 
-        ? Math.min(discountValue, baseFee) 
+  const calculatedDiscountAmount =
+    discountType === 'percentage'
+      ? Math.round((baseFee * discountValue) / 100)
+      : discountType === 'fixed'
+        ? Math.min(discountValue, baseFee)
         : 0;
 
   const finalFee = Math.max(0, baseFee - calculatedDiscountAmount);
 
-  // Keep paid amount in sync if user hasn't typed custom
+  // Sync paid amount when finalFee changes unless editing initial value
   useEffect(() => {
+    if (skipPaidSyncRef.current) {
+      skipPaidSyncRef.current = false;
+      return;
+    }
     setPaidAmount(finalFee);
   }, [finalFee]);
 
@@ -147,22 +192,24 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
     paymentStatus = 'متبقي';
   }
 
-  const [formError, setFormError] = useState<string | null>(null);
-
   // Handle Submit
   const handleSubmit = (printReceipt: boolean) => {
     setFormError(null);
     const selectedClinic = clinics.find((c) => c.id === selectedClinicId);
-    if (!selectedClinic) {
+    if (!selectedClinic && !isEditMode) {
       setFormError('يرجى اختيار العيادة الطبية أولاً');
       return;
     }
+
+    const clinicName = selectedClinic?.name || examToEdit?.clinicName || '';
+    const doctorName = selectedClinic?.doctorName || examToEdit?.doctorName || '';
+    const clinicId = selectedClinic?.id || examToEdit?.clinicId || '';
 
     let patientName = '';
     let patientPhone = '';
     let patientId = selectedPatientId;
 
-    if (isNewPatient) {
+    if (isNewPatient && !isEditMode) {
       if (!newPatientName.trim()) {
         setFormError('يرجى كتابة اسم المريض');
         return;
@@ -172,23 +219,23 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
       patientPhone = newPatientPhone.trim() || 'غير محدد';
     } else {
       const p = patients.find((pat) => pat.id === selectedPatientId);
-      if (!p) {
+      if (!p && !isEditMode) {
         setFormError('يرجى اختيار مريض من القائمة أو الضغط على "تسجيل مريض جديد"');
         return;
       }
-      patientName = p.fullName;
-      patientPhone = p.phone;
+      patientName = p?.fullName || examToEdit?.patientName || '';
+      patientPhone = p?.phone || examToEdit?.patientPhone || '';
     }
 
     const examRecord: Examination = {
-      id: `exam-${Date.now()}`,
-      receiptNumber: `REC-${Date.now().toString().slice(-6)}`,
+      id: examToEdit ? examToEdit.id : `exam-${Date.now()}`,
+      receiptNumber: examToEdit ? examToEdit.receiptNumber : `REC-${Date.now().toString().slice(-6)}`,
       patientId,
       patientName,
       patientPhone,
-      clinicId: selectedClinic.id,
-      clinicName: selectedClinic.name,
-      doctorName: selectedClinic.doctorName,
+      clinicId,
+      clinicName,
+      doctorName,
       date: examDate,
       time: examTime,
       examType,
@@ -205,42 +252,64 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
       prescription,
       notes: generalNotes,
       followUpDate: followUpDate || examDate,
-      followUpStatus: 'pending',
-      followUpNotes: followUpNotes || `إعادة كشف لدى ${selectedClinic.doctorName}`,
-      employeeName: 'وعد السيد (مدير قسم التسويق)'
+      followUpStatus: isEditMode ? followUpStatus : 'pending',
+      followUpNotes: followUpNotes || `إعادة كشف لدى ${doctorName}`,
+      employeeName: examToEdit?.employeeName || 'وعد السيد (مدير قسم التسويق)'
     };
 
-    const newPatientData: Partial<Patient> | undefined = isNewPatient ? {
-      id: patientId,
-      fileNumber: `RMC-${1000 + patients.length + 1}`,
-      fullName: patientName,
-      phone: patientPhone,
-      age: Number(newPatientAge) || 30,
-      gender: newPatientGender,
-      nationalId: newPatientNationalId,
-      address: newPatientAddress || 'دولة الإمارات',
-      medicalHistory: newPatientMedicalHistory,
-      createdAt: examDate
-    } : undefined;
+    if (isEditMode && onUpdateExam) {
+      onUpdateExam(examRecord, printReceipt);
+      onClose();
+      return;
+    }
+
+    const newPatientData: Partial<Patient> | undefined = isNewPatient
+      ? {
+          id: patientId,
+          fileNumber: `RMC-${1000 + patients.length + 1}`,
+          fullName: patientName,
+          phone: patientPhone,
+          age: Number(newPatientAge) || 30,
+          gender: newPatientGender,
+          nationalId: newPatientNationalId,
+          address: newPatientAddress || 'دولة الإمارات',
+          medicalHistory: newPatientMedicalHistory,
+          createdAt: examDate
+        }
+      : undefined;
 
     onSaveExam(examRecord, isNewPatient, newPatientData, printReceipt);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden" dir="rtl">
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-hidden"
+      dir="rtl"
+    >
       <div className="bg-white dark:bg-slate-900 w-full sm:max-w-3xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[92dvh] sm:h-auto sm:max-h-[90vh]">
-        
         {/* Header */}
-        <div className="p-3.5 sm:p-5 bg-gradient-to-r from-sky-700 via-sky-800 to-slate-900 dark:from-slate-900 dark:via-sky-950 dark:to-slate-950 text-white flex items-center justify-between shrink-0">
+        <div
+          className={`p-3.5 sm:p-5 ${
+            isEditMode
+              ? 'bg-gradient-to-r from-amber-700 via-sky-800 to-slate-900'
+              : 'bg-gradient-to-r from-sky-700 via-sky-800 to-slate-900 dark:from-slate-900 dark:via-sky-950 dark:to-slate-950'
+          } text-white flex items-center justify-between shrink-0`}
+        >
           <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shrink-0">
               <Stethoscope className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-base sm:text-xl font-black">تسجيل كشف طبي جديد</h3>
+              <h3 className="text-base sm:text-xl font-black">
+                {isEditMode
+                  ? `تعديل بيانات الكشف (${examToEdit?.receiptNumber})`
+                  : 'تسجيل كشف طبي جديد'}
+              </h3>
               <p className="text-[11px] sm:text-xs text-sky-200 mt-0.5">
-                دولة الإمارات 🇦🇪 • حفظ فوري في السجل والمزامنة السحابية
+                {isEditMode
+                  ? 'تحديث تفاصيل الكشف والفاتورة وموعد الإعادة والمزامنة مع Firebase'
+                  : 'دولة الإمارات 🇦🇪 • حفظ فوري في السجل والمزامنة السحابية'}
               </p>
             </div>
           </div>
@@ -256,8 +325,6 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
 
         {/* Form Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6 overscroll-contain">
-          
-          {/* Form Error Banner */}
           {formError && (
             <div className="p-3 bg-red-50 dark:bg-red-950/60 border border-red-300 dark:border-red-800 text-red-800 dark:text-red-300 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
               <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
@@ -273,44 +340,61 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
                 <span>بيانات المريض / العميل (الإمارات 🇦🇪)</span>
               </span>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsNewPatient(false)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    !isNewPatient ? 'bg-sky-600 text-white shadow-xs' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                  }`}
-                >
-                  اختيار مريض مسجل ({patients.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsNewPatient(true)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    isNewPatient ? 'bg-sky-600 text-white shadow-xs' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                  }`}
-                >
-                  + تسجيل مريض جديد
-                </button>
-              </div>
+              {!isEditMode && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsNewPatient(false)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      !isNewPatient
+                        ? 'bg-sky-600 text-white shadow-xs'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    اختيار مريض مسجل ({patients.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsNewPatient(true)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      isNewPatient
+                        ? 'bg-sky-600 text-white shadow-xs'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    + تسجيل مريض جديد
+                  </button>
+                </div>
+              )}
             </div>
 
-            {!isNewPatient && patients.length > 0 ? (
+            {(!isNewPatient && patients.length > 0) || isEditMode ? (
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  اختر المريض من السجل:
+                  المريض المرتبط بالكشف:
                 </label>
-                <select
-                  value={selectedPatientId}
-                  onChange={(e) => setSelectedPatientId(e.target.value)}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-medium focus:border-sky-500 text-slate-800 dark:text-slate-100 focus:outline-hidden"
-                >
-                  {patients.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.fullName} - هاتف: {p.phone} ({p.fileNumber})
-                    </option>
-                  ))}
-                </select>
+                {patients.length > 0 ? (
+                  <select
+                    value={selectedPatientId}
+                    onChange={(e) => setSelectedPatientId(e.target.value)}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-medium focus:border-sky-500 text-slate-800 dark:text-slate-100 focus:outline-hidden"
+                  >
+                    {!patients.some((p) => p.id === selectedPatientId) && examToEdit && (
+                      <option value={examToEdit.patientId}>
+                        {examToEdit.patientName} - {examToEdit.patientPhone}
+                      </option>
+                    )}
+                    {patients.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.fullName} - هاتف: {p.phone} ({p.fileNumber})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300 p-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                    {examToEdit?.patientName} ({examToEdit?.patientPhone})
+                  </p>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
@@ -366,7 +450,9 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الهوية الإماراتية (Emirates ID):</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    الهوية الإماراتية (Emirates ID):
+                  </label>
                   <input
                     type="text"
                     placeholder="784-XXXX-XXXXXXX-X"
@@ -378,7 +464,9 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الإمارة / العنوان:</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    الإمارة / العنوان:
+                  </label>
                   <input
                     type="text"
                     placeholder="مثال: دبي، البرشاء / أبوظبي، الخالدية / الشارقة..."
@@ -406,7 +494,6 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
 
           {/* Section 2: Clinic & Examination Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            
             {/* Clinic */}
             <div className="sm:col-span-2">
               <div className="flex items-center justify-between mb-1">
@@ -473,7 +560,9 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
 
             {/* Base Fee */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">قيمة الكشف الأساسية (درهم إماراتي د.إ):</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                قيمة الكشف الأساسية (درهم إماراتي د.إ):
+              </label>
               <input
                 type="number"
                 min="0"
@@ -482,10 +571,9 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
                 className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:border-sky-500 focus:outline-hidden"
               />
             </div>
-
           </div>
 
-          {/* Section 3: Discounts & Official Holidays (الخصومات وأعياد الإمارات) */}
+          {/* Section 3: Discounts & Official Holidays */}
           <div className="bg-amber-50/70 dark:bg-amber-950/30 p-4 sm:p-5 rounded-2xl border border-amber-200 dark:border-amber-900/50 space-y-3">
             <div className="flex items-center justify-between border-b border-amber-200/70 dark:border-amber-900/50 pb-2">
               <span className="text-sm font-extrabold text-amber-950 dark:text-amber-300 flex items-center gap-2">
@@ -545,7 +633,9 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">سبب أو مناسبة الخصم:</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      سبب أو مناسبة الخصم:
+                    </label>
                     <input
                       type="text"
                       placeholder="مثال: خصم عيد الاتحاد، خصم يوم العلم، عرض أكتوبر الوردي..."
@@ -558,7 +648,6 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
               )}
             </div>
 
-            {/* Calculated Breakdown */}
             <div className="pt-2 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-amber-200 dark:border-amber-900/50">
               <div className="text-xs text-slate-600 dark:text-slate-400">
                 المبلغ الأصلي: <strong className="text-slate-900 dark:text-white">{baseFee} د.إ</strong>
@@ -569,7 +658,8 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
                 )}
               </div>
               <div className="text-sm font-extrabold text-slate-900 dark:text-white">
-                المبلغ الصافي المطلوب: <span className="text-sky-700 dark:text-sky-400 text-base">{finalFee} د.إ</span>
+                المبلغ الصافي المطلوب:{' '}
+                <span className="text-sky-700 dark:text-sky-400 text-base">{finalFee} د.إ</span>
               </div>
             </div>
           </div>
@@ -577,7 +667,9 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
           {/* Section 4: Payment Details */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">المبلغ المسدد الآن (د.إ):</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                المبلغ المسدد الآن (د.إ):
+              </label>
               <input
                 type="number"
                 min="0"
@@ -588,7 +680,9 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">المبلغ المتبقي (د.إ):</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                المبلغ المتبقي (د.إ):
+              </label>
               <input
                 type="text"
                 readOnly
@@ -601,7 +695,7 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">طريقة السداد:</label>
               <select
                 value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value as any)}
+                onChange={(e) => setPaymentMethod(e.target.value as Examination['paymentMethod'])}
                 className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-semibold focus:border-sky-500 text-slate-800 dark:text-slate-100 focus:outline-hidden"
               >
                 <option value="نقداً">نقداً (كاش بالدرهم)</option>
@@ -612,7 +706,7 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
             </div>
           </div>
 
-          {/* Section 5: Re-examination Date & Follow-up (الأمر الهام) */}
+          {/* Section 5: Re-examination Date & Follow-up */}
           <div className="bg-red-50/70 dark:bg-red-950/30 p-4 sm:p-5 rounded-2xl border border-red-200 dark:border-red-900/50 space-y-3">
             <div className="flex items-center justify-between border-b border-red-200 dark:border-red-900/50 pb-2">
               <span className="text-sm font-extrabold text-red-950 dark:text-red-300 flex items-center gap-2">
@@ -624,7 +718,7 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className={`grid grid-cols-1 ${isEditMode ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3`}>
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   تاريخ إعادة الكشف المستحق <span className="text-red-500">*</span>:
@@ -641,6 +735,24 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
                 </p>
               </div>
 
+              {isEditMode && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    حالة إعادة الكشف:
+                  </label>
+                  <select
+                    value={followUpStatus}
+                    onChange={(e) => setFollowUpStatus(e.target.value as FollowUpStatus)}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-semibold focus:border-sky-500 text-slate-800 dark:text-slate-100 focus:outline-hidden"
+                  >
+                    <option value="pending">ساري / بانتظار الحضور</option>
+                    <option value="completed">تمت الإعادة ✓</option>
+                    <option value="overdue">متأخر عن الموعد</option>
+                    <option value="cancelled">ملغي</option>
+                  </select>
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   ملاحظات ومطلوبات إعادة الكشف:
@@ -656,10 +768,12 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
             </div>
           </div>
 
-          {/* Section 6: Diagnosis & Prescription Notes */}
+          {/* Section 6: Diagnosis, Prescription & Notes */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">التشخيص المبدئي:</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                التشخيص المبدئي:
+              </label>
               <textarea
                 rows={2}
                 placeholder="تشخيص الحالة والأعراض..."
@@ -670,7 +784,9 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الروشتة / الأدوية الموصوفة:</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                الروشتة / الأدوية الموصوفة:
+              </label>
               <textarea
                 rows={2}
                 placeholder="العلاج، الجرعات، والفحوصات المطلوبة..."
@@ -679,8 +795,20 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
                 className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs focus:border-sky-500 text-slate-800 dark:text-slate-100 focus:outline-hidden"
               />
             </div>
-          </div>
 
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                ملاحظات عامة على الكشف:
+              </label>
+              <input
+                type="text"
+                placeholder="أي ملاحظات إدارية أو طبية إضافية..."
+                value={generalNotes}
+                onChange={(e) => setGeneralNotes(e.target.value)}
+                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs focus:border-sky-500 text-slate-800 dark:text-slate-100 focus:outline-hidden"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Footer Actions */}
@@ -688,7 +816,7 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-colors text-center"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-colors text-center cursor-pointer"
           >
             إلغاء
           </button>
@@ -697,23 +825,22 @@ export const NewExaminationModal: React.FC<NewExaminationModalProps> = ({
             <button
               type="button"
               onClick={() => handleSubmit(true)}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xs"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>حفظ وطباعة الإيصال</span>
+              <span>{isEditMode ? 'حفظ التعديل وطباعة الإيصال' : 'حفظ وطباعة الإيصال'}</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleSubmit(false)}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white text-xs sm:text-sm font-extrabold transition-all shadow-md shadow-sky-200 dark:shadow-none flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white text-xs sm:text-sm font-extrabold transition-all shadow-md shadow-sky-200 dark:shadow-none flex items-center justify-center gap-2 cursor-pointer"
             >
               <Check className="w-4 h-4" />
-              <span>حفظ الكشف في السجل</span>
+              <span>{isEditMode ? 'حفظ تعديلات الكشف' : 'حفظ الكشف في السجل'}</span>
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );
